@@ -1,0 +1,411 @@
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "prevId": "",
+  "version": "5",
+  "dialect": "mysql",
+  "tables": {
+    "costume": {
+      "name": "costume",
+      "columns": {
+        "costume_id": {
+          "autoincrement": false,
+          "name": "costume_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cos_user_id": {
+          "autoincrement": false,
+          "name": "cos_user_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "costume_name": {
+          "autoincrement": false,
+          "name": "costume_name",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "costume_created_at": {
+          "autoincrement": false,
+          "name": "costume_created_at",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "costume_progress": {
+          "autoincrement": false,
+          "name": "costume_progress",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "costume_description": {
+          "autoincrement": false,
+          "name": "costume_description",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "costume_waist_length": {
+          "autoincrement": false,
+          "name": "costume_waist_length",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "costume_head_circumference": {
+          "autoincrement": false,
+          "name": "costume_head_circumference",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "costume_hip_length": {
+          "autoincrement": false,
+          "name": "costume_hip_length",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "costume_shoulder_length": {
+          "autoincrement": false,
+          "name": "costume_shoulder_length",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "costume_arm_length": {
+          "autoincrement": false,
+          "name": "costume_arm_length",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "costume_torso_length": {
+          "autoincrement": false,
+          "name": "costume_torso_length",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "costume_legs_length": {
+          "autoincrement": false,
+          "name": "costume_legs_length",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "costume_neck_length": {
+          "autoincrement": false,
+          "name": "costume_neck_length",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "costume_inner_seam_size": {
+          "autoincrement": false,
+          "name": "costume_inner_seam_size",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "costume_shoe_size": {
+          "autoincrement": false,
+          "name": "costume_shoe_size",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {
+        "costume_costume_id": {
+          "name": "costume_costume_id",
+          "columns": [
+            "costume_id"
+          ]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "fk_costume_user": {
+          "name": "fk_costume_user",
+          "tableFrom": "costume",
+          "tableTo": "user",
+          "columnsFrom": [
+            "cos_user_id"
+          ],
+          "columnsTo": [
+            "user_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "inventory": {
+      "name": "inventory",
+      "columns": {
+        "inventory_id": {
+          "autoincrement": false,
+          "name": "inventory_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "inventory_quantity": {
+          "autoincrement": false,
+          "name": "inventory_quantity",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "inventory_location": {
+          "autoincrement": false,
+          "name": "inventory_location",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "inventory_update": {
+          "autoincrement": false,
+          "name": "inventory_update",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {
+        "inventory_inventory_id": {
+          "name": "inventory_inventory_id",
+          "columns": [
+            "inventory_id"
+          ]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "item": {
+      "name": "item",
+      "columns": {
+        "item_id": {
+          "autoincrement": false,
+          "name": "item_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "item_name": {
+          "autoincrement": false,
+          "name": "item_name",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "item_total_cost": {
+          "autoincrement": false,
+          "name": "item_total_cost",
+          "type": "decimal(15,2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "item_status": {
+          "autoincrement": false,
+          "name": "item_status",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "item_fasteners": {
+          "autoincrement": false,
+          "name": "item_fasteners",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "item_trims": {
+          "autoincrement": false,
+          "name": "item_trims",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "item_tools": {
+          "autoincrement": false,
+          "name": "item_tools",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "item_foam": {
+          "autoincrement": false,
+          "name": "item_foam",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "item_filament": {
+          "autoincrement": false,
+          "name": "item_filament",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "item_cloths": {
+          "autoincrement": false,
+          "name": "item_cloths",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "project_key": {
+          "autoincrement": false,
+          "name": "project_key",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {
+        "item_item_id": {
+          "name": "item_item_id",
+          "columns": [
+            "item_id"
+          ]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "material": {
+      "name": "material",
+      "columns": {
+        "material_id": {
+          "autoincrement": false,
+          "name": "material_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "material_name": {
+          "autoincrement": false,
+          "name": "material_name",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "material_type": {
+          "autoincrement": false,
+          "name": "material_type",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "material_size": {
+          "autoincrement": false,
+          "name": "material_size",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "material_color": {
+          "autoincrement": false,
+          "name": "material_color",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "material_price": {
+          "autoincrement": false,
+          "name": "material_price",
+          "type": "decimal(15,2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "material_key": {
+          "autoincrement": false,
+          "name": "material_key",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {
+        "material_material_id": {
+          "name": "material_material_id",
+          "columns": [
+            "material_id"
+          ]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "user": {
+      "name": "user",
+      "columns": {
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_name": {
+          "autoincrement": false,
+          "name": "user_name",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_password": {
+          "autoincrement": false,
+          "name": "user_password",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_email": {
+          "autoincrement": false,
+          "name": "user_email",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {
+        "user_user_id": {
+          "name": "user_user_id",
+          "columns": [
+            "user_id"
+          ]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    }
+  },
+  "views": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "tables": {},
+    "indexes": {}
+  }
+}
