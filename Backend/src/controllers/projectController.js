@@ -1,22 +1,19 @@
 // Backend/src/controllers/projectController.js
-// Controllers are the "orchestrators" of our API. They receive requests from routes, validate inputs,
-// call services for data operations, and format responses. This keeps routes simple and logic reusable.
-// Why controllers? Separation of concerns: Routes handle HTTP, controllers handle business logic.
+// Controllers receive requests, validate inputs, call services, send responses
 
-const projectService = require('../services/projectService'); // Import our project service for data operations
-/**
- * Create a new project (costume) for a user.
- */
-async function createProject(req, res) {
+import * as projectService from '../services/projectService.js';
+
+// Create a new costume project
+export const createProject = async (req, res) => {
   try {
+    // Extract and validate inputs
     const { name, description, waistLength, headCircumference, userId } = req.body;
     
-    // Basic validation (we'll improve this with middleware later)
     if (!name || !userId) {
-      return res.status(400).json({ error: 'Project name and user ID are required' });
+      return res.status(400).json({ error: 'Name and userId are required' });
     }
-    
-    // Call service to create project in database
+
+    // Call service to insert into database
     const newProject = await projectService.createProjectInDB({
       name,
       description,
@@ -25,71 +22,101 @@ async function createProject(req, res) {
       userId
     });
 
-    res.status(201).json({
-        message: 'Project created successfully',
-        project: newProject
-    });
+    // Send response with created project
+    res.status(201).json({ message: 'Project created successfully', project: newProject });
   } catch (error) {
-    console.error('Error creating project:', error);
+    console.error('Controller error in createProject:', error);
     res.status(500).json({ error: 'Failed to create project' });
   }
-    }
+};
 
-/**
- * Get all projects for a specific user.
- */
-async function getProjectByUser(req, res) {
+// Get all projects for a user
+export const getProjectsByUser = async (req, res) => {
   try {
+    // Extract and validate user ID from URL
     const userId = parseInt(req.params.userId);
     
-    if (!userId || isNaN(userId)) {
-      return res.status(400).json({ error: 'Invalid user ID' });
+    if (!userId || Number.isNaN(userId)) {
+      return res.status(400).json({ error: 'Valid userId is required' });
     }
-    
-    // Call service to fetch projects for the user
+
+    // Call service to fetch projects
     const projects = await projectService.fetchUserProjects(userId);
-    res.json(projects); // Send array of projects as JSON response
-    } catch (error) {
-    console.error('Error fetching projects:', error);
+    
+    res.json(projects);
+  } catch (error) {
+    console.error('Controller error in getProjectsByUser:', error);
     res.status(500).json({ error: 'Failed to fetch projects' });
   }
-}
+};
 
-
-
-
-   /**
- * Get a single project by its ID.
- * This function demonstrates: 1) ID validation, 2) Single resource fetching, 3) 404 handling
- * @param {Object} req - Express request object (contains params.projectId)
- * @param {Object} res - Express response object
- * @returns {Promise<void>} Sends JSON project data or 404/error
- */
-async function getProjectById(req, res) {
+// Get a single project by ID
+export const getProjectById = async (req, res) => {
   try {
-    // Extract projectId from route parameters
+    // Extract and validate project ID from URL
     const projectId = parseInt(req.params.projectId);
     
-    // Validate projectId is a number
-    if (!projectId ||isNaN(projectId)) {
-      return res.status(400).json({ error: 'Invalid project ID' });
+    if (!projectId || Number.isNaN(projectId)) {
+      return res.status(400).json({ error: 'Valid projectId is required' });
     }
-    // Call service to fetch project from database
+
+    // Call service to fetch project
     const project = await projectService.fetchProjectById(projectId);
-    if (!project) {
-      return res.status(404).json({ error: 'Project not found' }); // 404: Not found
-    }
     
-    res.json(project); // Send project data as JSON response
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    res.json(project);
   } catch (error) {
-    console.error('Error fetching project:', error); // Log for debugging
-    res.status(500).json({ error: 'Internal server error' }); // 500: Server-side error
+    console.error('Controller error in getProjectById:', error);
+    res.status(500).json({ error: 'Failed to fetch project' });
   }
-}
+};
 
-module.exports = {
-    createProject,
-    getProjectByUser,
-    getProjectById
+// Update a project
+export const updateProject = async (req, res) => {
+  try {
+    // Extract and validate project ID
+    const projectId = parseInt(req.params.projectId);
+    
+    if (!projectId || Number.isNaN(projectId)) {
+      return res.status(400).json({ error: 'Valid projectId is required' });
+    }
 
-}
+    // Get update data from request body
+    const updates = req.body;
+
+    // Call service to update project
+    const updatedProject = await projectService.updateProjectInDB(projectId, updates);
+    
+    if (!updatedProject) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    res.json({ message: 'Project updated successfully', project: updatedProject });
+  } catch (error) {
+    console.error('Controller error in updateProject:', error);
+    res.status(500).json({ error: 'Failed to update project' });
+  }
+};
+
+// Delete a project
+export const deleteProject = async (req, res) => {
+  try {
+    // Extract and validate project ID
+    const projectId = parseInt(req.params.projectId);
+    
+    if (!projectId || Number.isNaN(projectId)) {
+      return res.status(400).json({ error: 'Valid projectId is required' });
+    }
+
+    // Call service to delete project
+    await projectService.deleteProjectInDB(projectId);
+    
+    res.status(204).send();
+  } catch (error) {
+    console.error('Controller error in deleteProject:', error);
+    res.status(500).json({ error: 'Failed to delete project' });
+  }
+};

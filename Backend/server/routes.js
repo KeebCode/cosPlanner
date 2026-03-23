@@ -1,85 +1,176 @@
-// Backend/server/routes.js
-// This file defines our API routes. Routes are like doorways: they handle incoming requests and direct them to the right logic.
-// We use Express Router to organize routes by feature (e.g., all project-related routes together).
+import express from 'express';
+import { database } from '../src/Database/connection.js';
+import { costume, users } from '../src/Database/schema.js';
+import { eq } from 'drizzle-orm';
+import verifyToken from '../Auth/middleware/auth.js';
+import { z } from 'zod';
 
-const express = require('express');
 const router = express.Router();
-const { database } = require('../src/Database/connection.js'); // Import our Drizzle database connection
 
-// GET /api/users/:id - Fetch a user and their costumes
-// This route demonstrates: 1) Parameter extraction (:id), 2) Database querying with Drizzle, 3) Error handling
-router.get('/users/:id', async (req, res) => {
-  try {
-    const userId = parseInt(req.params.id); // Extract user ID from URL (e.g., /api/users/123 → 123)
-    
-    // Query the database: Find user by ID, include their costumes (relationship from schema)
-    // Drizzle syntax: database.query.table.findFirst() with filters and relations
-    const user = await database.query.user.findFirst({
-      where: (user, { eq }) => eq(user.userId, userId), // Filter: userId must match
-      with: { costume: true } // Include related costumes (foreign key relationship)
-    });
-    
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' }); // 404: Resource doesn't exist
+// POST: Create costume
+router.post('/api/costume', verifyToken, async (req, res) => {
+    const {
+        userId,
+        name, 
+        description,
+        progress,
+        waist,
+        head_circumference,
+        hip,
+        shoulder_length,
+        arm_length,
+        torso_length,
+        legs_length,
+        neck_length,
+        innerseam_size,
+        shoe_size
+    } = req.body;
+    try { 
+        const result = await database.insert(costume).values({
+            cos_user_id: userId, 
+            costume_name: name, 
+            costume_description: description,
+            costume_progress: progress,
+            costume_created_at: new Date(),
+            costume_hip: hip,
+            costume_waist: waist, 
+            costume_head_circumference: head_circumference,
+            costume_shoulder_length: shoulder_length,
+            costume_arm_length: arm_length,
+            costume_torso_length: torso_length,
+            costume_legs_length: legs_length,
+            costume_neck_length: neck_length,
+            costume_innerseam_size: innerseam_size,
+            costume_shoe_size: shoe_size
+        });
+        res.status(201).json({costumeId: result.insertId});
+    } catch (error) {
+        console.error("error");
+        res.status(500).json({error: 'failed'});
     }
-    
-    res.json(user); // Send user data as JSON response
-  } catch (error) {
-    console.error('Error fetching user:', error); // Log for debugging
-    res.status(500).json({ error: 'Internal server error' }); // 500: Server-side error
-  }
 });
 
-// POST /api/projects - Create a new project (costume)
-// This route demonstrates: 1) POST for creation, 2) Request body parsing, 3) Input validation basics
-// NOTE: This is a stub for now. Later, we'll move logic to a controller and add validation.
-router.post('/projects', async (req, res) => {
-  try {
-    // Extract data from request body (sent by frontend form)
-    const { name, description, waistLength, headCircumference } = req.body;
-    
-    // Basic validation: Check required fields (we'll expand this with middleware later)
-    if (!name) {
-      return res.status(400).json({ error: 'Project name is required' }); // 400: Bad request
+// GET: Get all costumes for a user
+router.get('/api/users/:id/costumes', verifyToken, async (req, res) => {
+    const userId = parseInt(req.params.id);
+    try {
+        const costumesData = await database.select().from(costume).where(eq(costume.cos_user_id, userId));
+        res.json(costumesData);
+    } catch (error) {
+        res.status(500).json({error: 'Failed to fetch costume data!'});
     }
-    
-    // TODO: Call controller function here (e.g., projectController.createProject(req.body))
-    // For now, just respond with success (we'll implement actual creation next)
-    res.status(201).json({ message: 'Project created (stub)', name }); // 201: Created
-  } catch (error) {
-    console.error('Error creating project:', error);
-    res.status(500).json({ error: 'Failed to create project' });
-  }
 });
 
-// GET /api/projects/:userId - List projects for a user
-// This route demonstrates: 1) Filtering data by user, 2) Array responses
-router.get('/projects/:userId', async (req, res) => {
-  try {
-    const userId = parseInt(req.params.userId);
-    
-    // TODO: Call controller function here (e.g., projectController.getProjectsByUser(userId))
-    // For now, return empty array (we'll implement fetching next)
-    res.json([]); // Placeholder: Will return user's projects
-  } catch (error) {
-    console.error('Error fetching projects:', error);
-    res.status(500).json({ error: 'Failed to fetch projects' });
-  }
+// DELETE: Delete costume
+router.delete('/api/costumes/:id', verifyToken, async (req, res) => {
+    const costumeId = parseInt(req.params.id);
+    try {
+        await database.delete(costume).where(eq(costume.costume_id, costumeId));
+        res.status(204).send();
+    } catch (error) {
+        res.status(500).json({error: 'Failed to delete costume!'});
+    }
 });
 
-// GET /api/projects/:projectId - View a single project
-// This route demonstrates: 1) Single resource fetching, 2) ID-based lookup
-router.get('/projects/:projectId', async (req, res) => {
-  try {
-    const projectId = parseInt(req.params.projectId);
-    
-    // TODO: Call controller function here (e.g., projectController.getProjectById(projectId))
-    // For now, return placeholder (we'll implement next)
-    res.json({ id: projectId, name: 'Placeholder Project' });
-  } catch (error) {
-    console.error('Error fetching project:', error);
-    res.status(500).json({ error: 'Failed to fetch project' });
-  }
+// PUT: Update costume
+router.put('/api/costumes/:id', verifyToken, async (req, res) => {
+    const costumeId = parseInt(req.params.id);
+    const { description, progress, hip } = req.body;
+    try {
+        const updatedCostume = await database.update(costume).set({
+            costume_description: description,
+            costume_progress: progress,
+            costume_hip: hip
+        }).where(eq(costume.costume_id, costumeId)).returning();
+        res.json(updatedCostume);
+    } catch (error) {
+        res.status(500).json({error: 'Failed to update costume!'});
+    }
 });
 
-module.exports = router; // Export the router so server.js can use it
+// GET: Fetch user data
+router.get('/api/users/:id', verifyToken, async (req, res) => {
+    const userId = parseInt(req.params.id);
+    try { 
+        const userData = await database.query.user.findFirst({
+            where: (user, { eq }) => eq(user.userId, userId),
+            with: { costumes: true}
+        });
+        if (!userData) { 
+            return res.status(404).json({error: 'User not found!'});
+        }
+        res.json(userData);
+    } catch (error){
+        res.status(500).json({error: 'Failed to fetch user data!'});
+    }
+});
+
+// PUT: Update user data
+router.put('/api/users/:id', verifyToken, async (req, res) => {
+    const userId = parseInt(req.params.id);
+    const { userName, userEmail } = req.body;
+    try {
+        const updatedUser = await database.update(users).set({
+            user_name: userName,
+            user_email: userEmail
+        }).where(eq(users.user_id, userId)).returning();
+        if (!updatedUser) {
+            return res.status(404).json({error: 'User not found!'});
+        }
+        res.json(updatedUser);
+    } catch (error) {
+        res.status(500).json({error: 'Failed to update user data!'});
+    }
+});
+
+// Validation schema for user creation
+const createUserSchema = z.object({
+    userName: z.string().min(1, "name required").max(32),
+    userEmail: z.string().email("invalid email")
+});
+
+// POST: Create user
+router.post('/api/users', verifyToken, async (req, res) => {
+    try {
+        const validData = createUserSchema.parse(req.body);
+        const result = await database.insert(users).values({
+            user_name: validData.userName,
+            user_email: validData.userEmail,
+            user_created_at: new Date()
+        });
+        res.status(201).json({userId: result.insertId});
+    } catch (error) {
+        console.error("Error creating user:", error);
+        res.status(400).json({error: 'Failed to create user!'});
+    }
+});
+
+// DELETE: Delete user
+router.delete('/api/users/:id', verifyToken, async (req, res) => {
+    const userId = parseInt(req.params.id);
+    try {
+        await database.delete(users).where(eq(users.user_id, userId));
+        res.status(204).send();
+    } catch (error) {
+        res.status(500).json({error: 'Failed to delete user!'});
+    }
+});
+
+// ===== PROJECT ROUTES (Using Controller Layer) =====
+
+// POST: Create a new project
+router.post('/api/projects', verifyToken, projectController.createProject);
+
+// GET: List all projects for a user
+router.get('/api/projects/:userId', verifyToken, projectController.getProjectsByUser);
+
+// GET: Get a single project
+router.get('/api/projects/:projectId', verifyToken, projectController.getProjectById);
+
+// PUT: Update a project
+router.put('/api/projects/:projectId', verifyToken, projectController.updateProject);
+
+// DELETE: Delete a project
+router.delete('/api/projects/:projectId', verifyToken, projectController.deleteProject);
+
+export default router;
