@@ -1,141 +1,108 @@
-// import {mysqlTable, int, varchar, datetime, text, date, decimal} from 'drizzle-orm/mysql-core';
-
-// export const users = mysqlTable('Users', {
-//     user_id: int().primaryKey().autoincrement(),
-//     user_name: varchar({length: 32}).notNull(),
-//     user_password: varchar({length: 64}).notNull(),
-//     user_email: varchar({length: 64}).notNull(),
-// });
-
-// export const costumes = mysqlTable('Costumes', {
-//     costume_id: int().primaryKey().autoincrement(),
-//     cos_user_id: int().notNull(),
-//     costume_name: varchar({length: 32}).notNull(),
-//     costume_created_at: datetime().default(new Date()),
-//     costume_progress: int().default(0),
-//     costume_description: varchar({length: 32}), //256 maybe?
-//     costume_waist_length: int(),
-//     costume_head_circumference: int(),
-//     costume_hip_length: int(),
-//     costume_shoulder_length: int(),
-//     costume_arm_length: int(),
-//     costume_torso_length: int(),
-//     costume_legs_length: int(),
-//     costume_neck_length: int(),
-//     costume_inner_seam_size: int(),
-//     costume_shoe_size: int(),
-// });
-
-// export const items = mysqlTable('Items', {
-//     item_id: int().primaryKey().autoincrement(),
-//     item_name: varchar({length: 32}).notNull(),
-//     item_total_cost: decimal(15,2).notNull(),
-//     item_status: varchar({length: 32}).notNull(),
-//     item_fasteners: varchar({length: 32}).notNull(),
-//     item_trims: varchar({length: 32}).notNull(),
-//     item_tools: varchar({length: 32}).notNull(),
-//     item_foam: varchar({length: 32}).notNull(),
-//     item_filament: varchar({length: 32}).notNull(),
-//     item_cloths: varchar({length: 32}).notNull(),
-//     project_key: int().notNull() //foreign key to Materials
-// });
-
-// export const materials = mysqlTable('Materials', {
-//     material_id: int().primaryKey().autoincrement(),
-//     material_name: varchar({length: 32}).notNull(),
-//     material_type: varchar({length: 32}).notNull(),
-//     material_size: varchar({length: 32}).notNull(),
-//     material_color: varchar({length: 32}).notNull(),
-//     material_price: decimal(15,2).notNull(),
-//     material_key: int().notNull() //foreign key to Costumes
-// });
-
-// export const inventory = mysqlTable('Inventory', {
-//     inventory_id: int().primaryKey().autoincrement(),
-//     inventory_quantity: int().notNull(),
-//     inventory_location: varchar({length: 100}).notNull(),
-//     //inventory_update: Timestamp().default(new Date()), //DOUBLE CHECK THIS
-//     inventory_update: date()
-// });
-
-// export const history = mysqlTable('History', {
-//     history_id: int().primaryKey().autoincrement(),
-//     history_date: date().default(new Date()),
-//     history_description: text().notNull()
-// });
-
-
-import { mysqlTable, mysqlSchema, AnyMySqlColumn, foreignKey, primaryKey, int, varchar, datetime, timestamp, decimal } from "drizzle-orm/mysql-core"
+ import { mysqlTable, primaryKey, int, varchar, datetime, timestamp, decimal } from "drizzle-orm/mysql-core"
 import { sql } from "drizzle-orm"
 
 export const costume = mysqlTable("costume", {
-    costumeId: int("costume_id").notNull(),
-    cosUserId: int("cos_user_id").notNull().references(() => user.userId, { onDelete: "cascade" } ),
-    costumeName: varchar("costume_name", { length: 32 }),
-    costumeCreatedAt: datetime("costume_created_at", { mode: 'string'}),
-    costumeProgress: int("costume_progress"),
-    costumeDescription: varchar("costume_description", { length: 32 }),
-    costumeWaistLength: int("costume_waist_length"),
-    costumeHeadCircumference: int("costume_head_circumference"),
-    costumeHipLength: int("costume_hip_length"),
-    costumeShoulderLength: int("costume_shoulder_length"),
-    costumeArmLength: int("costume_arm_length"),
-    costumeTorsoLength: int("costume_torso_length"),
-    costumeLegsLength: int("costume_legs_length"),
-    costumeNeckLength: int("costume_neck_length"),
-    costumeInnerSeamSize: int("costume_inner_seam_size"),
-    costumeShoeSize: int("costume_shoe_size"),
+    //costume_id: int("costume_id").notNull().autoincrement(),
+    costume_id: int("costume_id").autoincrement().primaryKey().notNull(),
+    cos_user_id: int("cos_user_id").notNull().references(() => user.user_id, { onDelete: "cascade" } ),
+    costume_name: varchar("costume_name", { length: 32 }),
+    costume_created_at: datetime("costume_created_at", { mode: 'string'}),
+    costume_progress: int("costume_progress"),
+    costume_description: varchar("costume_description", { length: 32 }),
+    //testing (setup page)
+    measurements_completed: int ("measurements_completed").notNull().default(0),
+
+    costume_waist_length: int("costume_waist_length"),
+    costume_head_circumference: int("costume_head_circumference"),
+    costume_hip_length: int("costume_hip_length"),
+    costume_shoulder_length: int("costume_shoulder_length"),
+    costume_arm_length: int("costume_arm_length"),
+    costume_torso_length: int("costume_torso_length"),
+    costume_legs_length: int("costume_legs_length"),
+    costume_neck_length: int("costume_neck_length"),
+    costume_inner_seam_size: int("costume_inner_seam_size"),
+    costume_shoe_size: int("costume_shoe_size"),
 },
 (table) => [
-    primaryKey({ columns: [table.costumeId], name: "costume_costume_id"}),
+    primaryKey({ columns: [table.costume_id], name: "costume_costume_id"}),
 ]);
 
 export const inventory = mysqlTable("inventory", {
-    inventoryId: int("inventory_id").notNull(),
-    inventoryQuantity: int("inventory_quantity"),
-    inventoryLocation: varchar("inventory_location", { length: 100 }),
-    inventoryUpdate: timestamp("inventory_update", { mode: 'string' }),
+    inventory_id: int("inventory_id").autoincrement().primaryKey().notNull(),
+    inventory_quantity: int("inventory_quantity").notNull(),
+    inventory_quantity_item: varchar("inventory_quantity_item", { length: 32 }).notNull(),
+    inventory_location: varchar("inventory_location", { length: 100 }),
+    inventory_update: timestamp("inventory_update", { mode: 'string' }),
+    inventory_total_cost: decimal("inventory_total_cost", { precision: 15, scale: 2 }).notNull(),
+    inventory_status: varchar("inventory_status", { length: 32 }).notNull().default("need_to_buy"),
+    inv_key: int().notNull().references(() => costume.costume_id, { onDelete: "cascade" }),
+    item_key: int().notNull().references(() => item.item_id, { onDelete: "cascade" }),
 },
 (table) => [
-    primaryKey({ columns: [table.inventoryId], name: "inventory_inventory_id"}),
+    primaryKey({ columns: [table.inventory_id], name: "inventory_inventory_id"}),
 ]);
 
 export const item = mysqlTable("item", {
-    itemId: int("item_id").notNull(),
-    itemName: varchar("item_name", { length: 32 }),
-    itemTotalCost: decimal("item_total_cost", { precision: 15, scale: 2 }),
-    itemStatus: varchar("item_status", { length: 32 }),
-    itemFasteners: varchar("item_fasteners", { length: 32 }),
-    itemTrims: varchar("item_trims", { length: 32 }),
-    itemTools: varchar("item_tools", { length: 32 }),
-    itemFoam: varchar("item_foam", { length: 32 }),
-    itemFilament: varchar("item_filament", { length: 32 }),
-    itemCloths: varchar("item_cloths", { length: 32 }),
-    projectKey: int("project_key"),
+    item_id: int("item_id").autoincrement().primaryKey().notNull(),
+    item_name: varchar("item_name", { length: 100 }).notNull(),
+    // item_fasteners: varchar("item_fasteners", { length: 32 }),
+    // item_trims: varchar("item_trims", { length: 32 }),
+    // item_tools: varchar("item_tools", { length: 32 }),
+    // item_foam: varchar("item_foam", { length: 32 }),
+    // item_filament: varchar("item_filament", { length: 32 }),
+    // item_cloths: varchar("item_cloths", { length: 32 }),
+    item_size: int("item_size"),
+    item_color: varchar("item_color", { length: 32 }),
+    item_category: varchar("item_category", { length: 32 }).notNull().default("other"),
+    project_key: int("project_key").notNull().references(() => costume.costume_id, { onDelete: "cascade" } ),
 },
 (table) => [
-    primaryKey({ columns: [table.itemId], name: "item_item_id"}),
+    primaryKey({ columns: [table.item_id], name: "item_item_id"}),
 ]);
 
-export const material = mysqlTable("material", {
-    materialId: int("material_id").notNull(),
-    materialName: varchar("material_name", { length: 32 }),
-    materialType: varchar("material_type", { length: 32 }),
-    materialSize: int("material_size"),
-    materialColor: varchar("material_color", { length: 32 }),
-    materialPrice: decimal("material_price", { precision: 15, scale: 2 }),
-    materialKey: int("material_key"),
+export const checklist = mysqlTable("checklist", {
+    checklist_id: int("checklist_id").autoincrement().primaryKey().notNull(),
+    checklist_title: varchar("checklist_title", { length: 200 }).notNull(),
+    checklist_notes: varchar("checklist_notes", { length: 1000 }),
+    checklist_completed: int("checklist_completed").notNull().default(0),
+    checklist_created_at: datetime("checklist_created_at", { mode: 'string' }).notNull(),
+    checklist_due_date: datetime("checklist_due_date", { mode: 'string' }),
+    checklist_urgency: varchar("checklist_urgency", { length: 16 }).notNull().default("none"),
+    checklist_category: varchar("checklist_category", { length: 64 }),
+    checklist_flagged: int("checklist_flagged").notNull().default(0),
+    checklist_auto_source: varchar("checklist_auto_source", { length: 32 }),
+    checklist_source_id: int("checklist_source_id"),
+    check_key: int("check_key").notNull().references(() => costume.costume_id, { onDelete: "cascade" }),
+    user_id: int("user_id").notNull().references(() => user.user_id, { onDelete: "cascade" }),  //testing purpses
 },
 (table) => [
-    primaryKey({ columns: [table.materialId], name: "material_material_id"}),
+    primaryKey({ columns: [table.checklist_id], name: "checklist_checklist_id"}),
 ]);
 
 export const user = mysqlTable("user", {
-    userId: int("user_id").notNull(),
-    userName: varchar("user_name", { length: 32 }).notNull(),
-    userPassword: varchar("user_password", { length: 64 }).notNull(),
-    userEmail: varchar("user_email", { length: 64 }).notNull(),
+    user_id: int("user_id").notNull().autoincrement(),
+    user_name: varchar("user_name", { length: 32 }).notNull(),
+    user_password: varchar("user_password", { length: 64 }).notNull(),
+    user_email: varchar("user_email", { length: 64 }).notNull(),
 },
 (table) => [
-    primaryKey({ columns: [table.userId], name: "user_user_id"}),
+    primaryKey({ columns: [table.user_id], name: "user_user_id"}),
 ]);
+
+// export const checklist = mysqlTable("checklist", {
+//     checklist_id: int("checklist_id").autoincrement().primaryKey().notNull(),
+//     checklist_title: varchar("checklist_title", { length: 200 }).notNull(),
+//     checklist_notes: varchar("checklist_notes", { length: 1000 }),
+//     checklist_completed: int("checklist_completed").notNull().default(0),
+//     checklist_created_at: datetime("checklist_created_at", { mode: 'string' }).notNull(),
+//     checklist_due_date: datetime("checklist_due_date", { mode: 'string' }),
+//     checklist_urgency: varchar("checklist_urgency", { length: 16 }).notNull().default("none"),
+//     checklist_category: varchar("checklist_category", { length: 64 }),
+//     checklist_flagged: int("checklist_flagged").notNull().default(0),
+//     checklist_auto_source: varchar("checklist_auto_source", { length: 32 }),
+//     checklist_source_id: int("checklist_source_id"),
+//     cos_key: int("cos_key").notNull().references(() => costume.costume_id, { onDelete: "cascade" }),
+// },
+// (table) => [
+//     primaryKey({ columns: [table.checklist_id], name: "checklist_checklist_id"}),
+// ]);
