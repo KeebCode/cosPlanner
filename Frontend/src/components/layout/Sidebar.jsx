@@ -14,7 +14,7 @@ export default function Sidebar() {
 
       <ul style={{ listStyle: "none", padding: 0 }}>
         <li>
-          <Link to="/projects">Projects</Link>
+          <Link to="/">Projects</Link>
         </li>
 
         <li>
