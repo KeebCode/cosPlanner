@@ -149,14 +149,15 @@ async function findOwnedChecklist(checklistId, authenticatedUser) {
 
   return rows[0] ?? null;
 }
-// Helper function to get today's date at 00:00:00
+
+//helper function to get today's date at 00:00:00
 function getTodayStart() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   return today;
 }
 
-// Helper function to get tomorrow's date at 00:00:00
+//helper function to get tomorrow's date at 00:00:00
 function getTomorrowStart() {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -165,7 +166,7 @@ function getTomorrowStart() {
 }
 
 // Phase 1 endpoint:
-// frontend sends Firebase ID token -> backend verifies it -> backend returns DB user_id.
+//frontend sends Firebase ID token -> backend verifies it -> backend returns DB user_id.
 app.post("/api/auth/sync-user", verifyToken, async (req, res) => {
   try {
     const databaseUser = await findOrCreateDatabaseUser(req.user);
@@ -181,10 +182,6 @@ app.post("/api/auth/sync-user", verifyToken, async (req, res) => {
   }
 });
 
-app.get("/api/test", (req, res) => {
-  res.json({ message: "Backend working" }); //testing purposes only, can be deleted later
-});
-
 app.get("/api/projects", verifyToken, async (req, res) => {
    try {
     // ensures we have a DB's user_id tied to authenticated email
@@ -198,7 +195,7 @@ app.get("/api/projects", verifyToken, async (req, res) => {
         created_at: costume.costume_created_at,
         description: costume.costume_description,
 
-        measurements_completed: costume.measurements_completed, //testing (setup page)
+        measurements_completed: costume.measurements_completed, //for setup page
         costume_waist_length: costume.costume_waist_length,
         costume_head_circumference: costume.costume_head_circumference,
         costume_hip_length: costume.costume_hip_length,
@@ -358,7 +355,7 @@ app.get("/api/projects/:id", verifyToken, async (req, res) => {
       .from(costume)
       .where(
         and(
-          eq(costume.costume_id, projectId),  //redundant? shows up again in the backend towards the end of the code.
+          eq(costume.costume_id, projectId),  //spacing in description?
           eq(costume.cos_user_id, dbUser.user_id)
         )
       )
@@ -504,7 +501,6 @@ app.post("/api/projects/:id/inventory", verifyToken, async (req, res) => {
       .values({
         item_name: name.trim(),
         item_category: category.trim(),
-        //item_size: size?.trim() || null,
         item_size: size ? Number(size) : null,
         item_color: color?.trim() || null,
         project_key: projectId,
@@ -585,7 +581,6 @@ app.patch("/api/inventory/:id", verifyToken, async (req, res) => {
       .set({
         item_name: name.trim(),
         item_category: category.trim(),
-        //item_size: size?.trim() || null,
         item_size: size ? Number(size) : null,
         item_color: color?.trim() || null,
       })
@@ -779,8 +774,7 @@ app.delete("/api/checklist/:id", verifyToken, async (req, res) => {
   }
 });
 
-//TESTING ONLY TESTING TESTING TESTING TESTING TESTING TESTING TESTING
-// GET summary counts for a project (for dashboard project boxes)
+//get summary counts for a project (for dashboard project boxes)
 app.get("/api/projects/:id/checklist/summary", verifyToken, async (req, res) => {
   try {
     const projectId = Number(req.params.id);
@@ -796,7 +790,7 @@ app.get("/api/projects/:id/checklist/summary", verifyToken, async (req, res) => 
     const todayStart = getTodayStart();
     const tomorrowStart = getTomorrowStart();
     
-    // Get counts for each category for this project
+    //get counts for each category for this project
     const all = await database.select().from(checklist)
       .where(and(eq(checklist.check_key, projectId), eq(checklist.checklist_completed, 0)));
     
@@ -843,9 +837,6 @@ app.get("/api/projects/:id/checklist/summary", verifyToken, async (req, res) => 
     res.status(500).json({error: 'Failed to fetch summary'});
   }
 });
-
-// TESTING ONLY TESTING TESTING TESTING TESTING TESTING TESTING 
-
 
 //get inventory items that need buying (for checklist suggestions)
 app.get("/api/projects/:id/checklist/suggestions", verifyToken, async (req, res) => {
@@ -977,7 +968,7 @@ app.get("/api/checklists/summary", verifyToken, async (req, res) => {
     const todayStart = getTodayStart();
     const tomorrowStart = getTomorrowStart();
     
-    // Get counts for each category
+    //get counts for each category
     const all = await database.select().from(checklist)
       .where(and(eq(checklist.user_id, dbUser.user_id), eq(checklist.checklist_completed, 0)));
     
@@ -1025,7 +1016,7 @@ app.get("/api/checklists/summary", verifyToken, async (req, res) => {
   }
 });
 
-//get all checklists for user (not completed)
+//get all checklists of user
 app.get("/api/checklists/all", verifyToken, async (req, res) => {
   try {
     const dbUser = await findOrCreateDatabaseUser(req.user);
@@ -1193,9 +1184,6 @@ app.get("/api/checklists/overdue", verifyToken, async (req, res) => {
   }
 });
 
-//load balancer OR input validation
-
-
 //middleware 
 function requestLogger(req, res, next) {
   const now = new Date().toISOString();
@@ -1243,3 +1231,7 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+// app.get("/api/test", (req, res) => {
+//   res.json({ message: "Backend working" }); //testing purposes only, can be deleted later
+// });
