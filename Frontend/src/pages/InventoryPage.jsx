@@ -255,7 +255,7 @@ export default function InventoryPage() {
       cost: Number(form.cost),
       status: form.status,
       location: form.location.trim(),
-      size: form.size ? Number(form.size) : null,  // ✅ FIXED: Convert to number
+      size: form.size ? Number(form.size) : null,
       color: form.color.trim(),
     };
 
