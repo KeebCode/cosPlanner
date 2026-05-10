@@ -8,15 +8,27 @@ export default function FabricHeader() {
   return (
     <div
       style={{
-        background: "#d9d9d9",
-        padding: "10px",
-        border: "1px solid #aaa",
-        color: "#333",
+        background: "#ffffff",
+        padding: "8px 10px",
+        borderBottom: "1px solid #e2e8f0",
+        color: "#64748b",
+        fontSize: "11px",
+        flexShrink: 0,
       }}
     >
-      <div style={{ marginBottom: "5px" }}>SELVAGE (Lengthwise Grain) →</div>
+      <div
+        style={{
+          marginBottom: "4px",
+          fontWeight: 600,
+          color: "#94a3b8",
+          fontSize: "10px",
+          letterSpacing: "0.06em",
+        }}
+      >
+        SELVAGE (Lengthwise Grain) →
+      </div>
 
-      <div style={{ display: "flex", gap: "40px", fontSize: "12px" }}>
+      <div style={{ display: "flex", gap: "40px" }}>
         {marks.map((m) => (
           <span key={m}>{m}"</span>
         ))}
