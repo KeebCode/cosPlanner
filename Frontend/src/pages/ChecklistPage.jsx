@@ -13,9 +13,9 @@ import {
 
 const URGENCY_OPTIONS = [
   { value: "none", label: "None", color: null },
-  { value: "low", label: "Low", color: "#34d399" },
-  { value: "medium", label: "Medium", color: "#fbbf24" },
-  { value: "high", label: "High", color: "#f87171" },
+  { value: "low", label: "Low", color: "#22c55e" },
+  { value: "medium", label: "Medium", color: "#f59e0b" },
+  { value: "high", label: "High", color: "#ef4444" },
 ];
 
 function getUrgencyColor(urgency) {
@@ -64,7 +64,6 @@ function normalizeTask(row) {
   };
 }
 
-// Color palette for category pills
 const CATEGORY_COLORS = [
   "#6366f1", "#ec4899", "#f59e0b", "#10b981", "#3b82f6",
   "#8b5cf6", "#ef4444", "#14b8a6", "#f97316", "#06b6d4",
@@ -83,7 +82,7 @@ export default function ChecklistPage() {
   const [projectName, setProjectName] = useState("");
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState("");
-  const [activeFilter, setActiveFilter] = useState(null); // null = all
+  const [activeFilter, setActiveFilter] = useState(null);
   const [newTitle, setNewTitle] = useState("");
   const [newCategory, setNewCategory] = useState("");
   const [expandedTaskId, setExpandedTaskId] = useState(null);
@@ -131,7 +130,6 @@ export default function ChecklistPage() {
     loadChecklist();
   }, [id]);
 
-  // derive unique categories from tasks
   const categories = useMemo(() => {
     const cats = new Set();
     tasks.forEach((t) => { if (t.category) cats.add(t.category); });
@@ -143,7 +141,6 @@ export default function ChecklistPage() {
     return tasks.filter((t) => t.category === activeFilter);
   }, [tasks, activeFilter]);
 
-  // group tasks by category
   const groupedTasks = useMemo(() => {
     const groups = {};
     filteredTasks.forEach((t) => {
@@ -156,8 +153,6 @@ export default function ChecklistPage() {
 
   const completedCount = useMemo(() => tasks.filter((t) => t.completed).length, [tasks]);
   const progressPercent = tasks.length ? Math.round((completedCount / tasks.length) * 100) : 0;
-
-  // ---- Actions ----
 
   async function handleAddTask(e) {
     e.preventDefault();
@@ -242,69 +237,82 @@ export default function ChecklistPage() {
   }
 
   if (loading) {
-    return <div style={{ color: "#f5f5f5" }}>Loading checklist...</div>;
+    return (
+      <div style={{ padding: "28px 32px", color: "#64748b", fontSize: "0.875rem" }}>
+        Loading checklist...
+      </div>
+    );
   }
 
   return (
-    <div style={{ color: "#f5f5f5", maxWidth: 800 }}>
+    <div style={{ color: "#1e293b", maxWidth: 800, padding: "28px 32px" }}>
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontSize: 24 }}>☑</span>
-          <h1 style={{ margin: 0, fontSize: 24 }}>Task Checklist</h1>
+          <span style={{ fontSize: 22, color: "#6d28d9" }}>☑</span>
+          <h1 style={{ margin: 0, fontSize: "1.5rem", fontWeight: 700, color: "#1e293b" }}>
+            Task Checklist
+          </h1>
         </div>
-        <div style={{ fontSize: 18, fontWeight: 700, opacity: 0.8 }}>
+        <div
+          style={{
+            fontSize: "0.95rem",
+            fontWeight: 700,
+            background: "#ede9fe",
+            color: "#6d28d9",
+            borderRadius: "9999px",
+            padding: "4px 14px",
+          }}
+        >
           {completedCount}/{tasks.length}
         </div>
       </div>
 
-      <p style={{ margin: "0 0 14px 0", opacity: 0.6, fontSize: 13 }}>
-        {projectName} | Project ID: {id}
+      <p style={{ margin: "0 0 16px 0", color: "#64748b", fontSize: "0.82rem" }}>
+        {projectName}
       </p>
 
       {pageError && <div style={errorBoxStyle}>{pageError}</div>}
 
       {/* Progress bar */}
       <div style={{ marginBottom: 20 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, opacity: 0.7, marginBottom: 4 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "#64748b", marginBottom: 4 }}>
           <span>Progress</span>
           <span>{progressPercent}%</span>
         </div>
-        <div style={{ height: 8, borderRadius: 99, background: "#333", overflow: "hidden" }}>
+        <div style={{ height: 8, borderRadius: 99, background: "#e2e8f0", overflow: "hidden" }}>
           <div
             style={{
               height: "100%",
               width: `${progressPercent}%`,
               borderRadius: 99,
-              background: "#22c55e",
+              background: "linear-gradient(90deg, #4f46e5, #7c3aed)",
               transition: "width 0.3s ease",
             }}
           />
         </div>
       </div>
 
-      {/* Quick add */}
-      <form onSubmit={handleAddTask} style={{ marginBottom: 12 }}>
-        <div style={{ display: "flex", gap: 8 }}>
-          <input
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-            placeholder="Add a new task..."
-            style={{ ...inputStyle, flex: 1 }}
-          />
-        </div>
+      {/* Quick add input */}
+      <form onSubmit={handleAddTask} style={{ marginBottom: 10 }}>
+        <input
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          placeholder="Add a new task..."
+          style={inputStyle}
+        />
       </form>
 
-      {/* Category pills row */}
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+      {/* Category pills */}
+      <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 8 }}>
         <button
           type="button"
           onClick={() => setActiveFilter(null)}
           style={{
             ...pillStyle,
-            background: !activeFilter ? "#f5f5f5" : "#2a2a2a",
-            color: !activeFilter ? "#111" : "#f5f5f5",
-            border: !activeFilter ? "1px solid #f5f5f5" : "1px solid #444",
+            background: !activeFilter ? "#ede9fe" : "#f1f5f9",
+            color: !activeFilter ? "#6d28d9" : "#64748b",
+            border: !activeFilter ? "1px solid #c4b5fd" : "1px solid #e2e8f0",
           }}
         >
           All
@@ -319,9 +327,9 @@ export default function ChecklistPage() {
               onClick={() => setActiveFilter(isActive ? null : cat)}
               style={{
                 ...pillStyle,
-                background: isActive ? catColor : "#2a2a2a",
+                background: isActive ? catColor : "#f1f5f9",
                 color: isActive ? "#fff" : catColor,
-                border: `1px solid ${isActive ? catColor : "#444"}`,
+                border: `1px solid ${isActive ? catColor : "#e2e8f0"}`,
               }}
             >
               {cat}
@@ -330,19 +338,21 @@ export default function ChecklistPage() {
         })}
       </div>
 
-      {/* New category + category assignment for quick add */}
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20, alignItems: "center" }}>
+      {/* Category assignment row */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16, alignItems: "center" }}>
         {newCategory && (
-          <span style={{ fontSize: 12, opacity: 0.7 }}>
-            New task category: <strong>{newCategory}</strong>
-            <button type="button" onClick={() => setNewCategory("")} style={{ ...tinyBtnStyle, marginLeft: 6 }}>✕</button>
+          <span style={{ fontSize: "0.78rem", color: "#64748b" }}>
+            Category: <strong style={{ color: "#6d28d9" }}>{newCategory}</strong>
+            <button type="button" onClick={() => setNewCategory("")} style={tinyBtnStyle}>
+              ✕
+            </button>
           </span>
         )}
         {categories.length > 0 && !addingCategory && (
           <select
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
-            style={{ ...inputStyle, width: "auto", padding: "6px 10px", fontSize: 12 }}
+            style={{ ...inputStyle, width: "auto", padding: "6px 10px", fontSize: "0.78rem" }}
           >
             <option value="">No category</option>
             {categories.map((c) => (
@@ -355,16 +365,20 @@ export default function ChecklistPage() {
             <input
               value={customCategoryInput}
               onChange={(e) => setCustomCategoryInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddCategory(); }}}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddCategory(); } }}
               placeholder="Category name"
               autoFocus
-              style={{ ...inputStyle, width: 140, padding: "6px 10px", fontSize: 12 }}
+              style={{ ...inputStyle, width: 140, padding: "6px 10px", fontSize: "0.78rem" }}
             />
             <button type="button" onClick={handleAddCategory} style={tinyBtnStyle}>✓</button>
             <button type="button" onClick={() => { setAddingCategory(false); setCustomCategoryInput(""); }} style={tinyBtnStyle}>✕</button>
           </div>
         ) : (
-          <button type="button" onClick={() => setAddingCategory(true)} style={{ ...pillStyle, background: "#2a2a2a", color: "#888", border: "1px solid #444", fontSize: 12 }}>
+          <button
+            type="button"
+            onClick={() => setAddingCategory(true)}
+            style={{ ...pillStyle, background: "#f1f5f9", color: "#64748b", border: "1px solid #e2e8f0", fontSize: "0.78rem" }}
+          >
             + New Category
           </button>
         )}
@@ -377,13 +391,15 @@ export default function ChecklistPage() {
         disabled={!newTitle.trim()}
         style={{
           width: "100%",
-          padding: "12px",
+          padding: "11px",
           borderRadius: 10,
           border: "none",
-          background: newTitle.trim() ? "#f5f5f5" : "#333",
-          color: newTitle.trim() ? "#111" : "#888",
+          background: newTitle.trim()
+            ? "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)"
+            : "#e2e8f0",
+          color: newTitle.trim() ? "#fff" : "#94a3b8",
           fontWeight: 700,
-          fontSize: 14,
+          fontSize: "0.875rem",
           cursor: newTitle.trim() ? "pointer" : "default",
           marginBottom: 24,
         }}
@@ -403,21 +419,23 @@ export default function ChecklistPage() {
             <div key={cat} style={{ marginBottom: 24 }}>
               {/* Category header */}
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                <div style={{ width: 10, height: 10, borderRadius: 99, background: catColor }} />
-                <span style={{ fontWeight: 700, fontSize: 16 }}>{cat}</span>
-                <span style={{
-                  fontSize: 12,
-                  padding: "2px 8px",
-                  borderRadius: 99,
-                  background: "#333",
-                  color: "#ccc",
-                  fontWeight: 600,
-                }}>
+                <div style={{ width: 9, height: 9, borderRadius: 99, background: catColor }} />
+                <span style={{ fontWeight: 700, fontSize: "0.95rem", color: "#1e293b" }}>{cat}</span>
+                <span
+                  style={{
+                    fontSize: "0.7rem",
+                    padding: "2px 8px",
+                    borderRadius: 99,
+                    background: "#f1f5f9",
+                    color: "#64748b",
+                    fontWeight: 600,
+                    border: "1px solid #e2e8f0",
+                  }}
+                >
                   {catCompleted}/{catTasks.length}
                 </span>
               </div>
 
-              {/* Tasks */}
               <div style={{ display: "grid", gap: 6 }}>
                 {catTasks.map((task) => {
                   const expanded = expandedTaskId === task.id;
@@ -430,12 +448,16 @@ export default function ChecklistPage() {
                       <div
                         style={{
                           ...taskCardStyle,
-                          borderLeft: overdue ? "3px solid #ef4444" : urgColor ? `3px solid ${urgColor}` : "3px solid transparent",
-                          opacity: task.completed ? 0.55 : 1,
+                          borderLeft: overdue
+                            ? "3px solid #ef4444"
+                            : urgColor
+                            ? `3px solid ${urgColor}`
+                            : "3px solid #e2e8f0",
+                          opacity: task.completed ? 0.6 : 1,
                         }}
                       >
                         <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                          {/* Checkbox circle */}
+                          {/* Checkbox */}
                           <button
                             type="button"
                             onClick={() => handleToggle(task)}
@@ -444,7 +466,7 @@ export default function ChecklistPage() {
                               height: 22,
                               minWidth: 22,
                               borderRadius: 99,
-                              border: task.completed ? "2px solid #22c55e" : "2px solid #555",
+                              border: task.completed ? "2px solid #22c55e" : "2px solid #cbd5e1",
                               background: task.completed ? "#22c55e" : "transparent",
                               cursor: "pointer",
                               display: "flex",
@@ -464,31 +486,43 @@ export default function ChecklistPage() {
                             style={{ flex: 1, cursor: "pointer" }}
                             onClick={() => setExpandedTaskId(expanded ? null : task.id)}
                           >
-                            <div style={{
-                              fontSize: 15,
-                              fontWeight: 500,
-                              textDecoration: task.completed ? "line-through" : "none",
-                            }}>
+                            <div
+                              style={{
+                                fontSize: "0.9rem",
+                                fontWeight: 500,
+                                color: "#1e293b",
+                                textDecoration: task.completed ? "line-through" : "none",
+                              }}
+                            >
                               {task.title}
                             </div>
 
-                            {/* Meta row */}
                             <div style={{ display: "flex", gap: 10, marginTop: 4, flexWrap: "wrap", alignItems: "center" }}>
                               {task.urgency !== "none" && (
-                                <span style={{ fontSize: 11, color: urgColor, fontWeight: 700 }}>
-                                  {task.urgency === "high" ? "🔴" : task.urgency === "medium" ? "🟡" : "🟢"} {getUrgencyLabel(task.urgency)}
+                                <span style={{ fontSize: "0.7rem", color: urgColor, fontWeight: 700 }}>
+                                  {task.urgency === "high" ? "🔴" : task.urgency === "medium" ? "🟡" : "🟢"}{" "}
+                                  {getUrgencyLabel(task.urgency)}
                                 </span>
                               )}
                               {task.dueDate && (
-                                <span style={{ fontSize: 11, color: overdue ? "#ef4444" : "#aaa" }}>
+                                <span style={{ fontSize: "0.7rem", color: overdue ? "#ef4444" : "#64748b" }}>
                                   📅 {formatDate(task.dueDate)}
                                 </span>
                               )}
                               {task.flagged && (
-                                <span style={{ fontSize: 11, color: "#f59e0b" }}>🚩</span>
+                                <span style={{ fontSize: "0.7rem" }}>🚩</span>
                               )}
                               {task.autoSource === "inventory" && (
-                                <span style={{ fontSize: 10, color: "#6366f1", background: "#1e1b4b", padding: "1px 6px", borderRadius: 4 }}>
+                                <span
+                                  style={{
+                                    fontSize: "0.65rem",
+                                    color: "#6366f1",
+                                    background: "#ede9fe",
+                                    padding: "1px 6px",
+                                    borderRadius: 4,
+                                    border: "1px solid #c4b5fd",
+                                  }}
+                                >
                                   from inventory
                                 </span>
                               )}
@@ -500,13 +534,16 @@ export default function ChecklistPage() {
                       {/* Expanded detail panel */}
                       {expanded && (
                         <div style={detailPanelStyle}>
-                          {/* Notes */}
-                          <label style={{ display: "grid", gap: 4, fontSize: 13 }}>
-                            <span style={{ opacity: 0.7 }}>Notes</span>
+                          <label style={{ display: "grid", gap: 4, fontSize: "0.82rem" }}>
+                            <span style={{ color: "#64748b" }}>Notes</span>
                             <textarea
                               value={task.notes}
                               onChange={(e) =>
-                                setTasks((prev) => prev.map((t) => t.id === task.id ? { ...t, notes: e.target.value } : t))
+                                setTasks((prev) =>
+                                  prev.map((t) =>
+                                    t.id === task.id ? { ...t, notes: e.target.value } : t
+                                  )
+                                )
                               }
                               onBlur={() => handleUpdateTask(task.id, { notes: task.notes })}
                               placeholder="Write notes about this task..."
@@ -515,9 +552,8 @@ export default function ChecklistPage() {
                             />
                           </label>
 
-                          {/* Due date */}
-                          <label style={{ display: "grid", gap: 4, fontSize: 13 }}>
-                            <span style={{ opacity: 0.7 }}>Due Date & Time</span>
+                          <label style={{ display: "grid", gap: 4, fontSize: "0.82rem" }}>
+                            <span style={{ color: "#64748b" }}>Due Date & Time</span>
                             <input
                               type="datetime-local"
                               value={task.dueDate ? task.dueDate.slice(0, 16) : ""}
@@ -526,9 +562,8 @@ export default function ChecklistPage() {
                             />
                           </label>
 
-                          {/* Urgency */}
-                          <label style={{ display: "grid", gap: 4, fontSize: 13 }}>
-                            <span style={{ opacity: 0.7 }}>Urgency</span>
+                          <label style={{ display: "grid", gap: 4, fontSize: "0.82rem" }}>
+                            <span style={{ color: "#64748b" }}>Urgency</span>
                             <select
                               value={task.urgency}
                               onChange={(e) => handleUpdateTask(task.id, { urgency: e.target.value })}
@@ -540,13 +575,16 @@ export default function ChecklistPage() {
                             </select>
                           </label>
 
-                          {/* Category */}
-                          <label style={{ display: "grid", gap: 4, fontSize: 13 }}>
-                            <span style={{ opacity: 0.7 }}>Category</span>
+                          <label style={{ display: "grid", gap: 4, fontSize: "0.82rem" }}>
+                            <span style={{ color: "#64748b" }}>Category</span>
                             <input
                               value={task.category}
                               onChange={(e) =>
-                                setTasks((prev) => prev.map((t) => t.id === task.id ? { ...t, category: e.target.value } : t))
+                                setTasks((prev) =>
+                                  prev.map((t) =>
+                                    t.id === task.id ? { ...t, category: e.target.value } : t
+                                  )
+                                )
                               }
                               onBlur={() => handleUpdateTask(task.id, { category: task.category })}
                               placeholder="e.g. Cutting, Sewing, Shopping..."
@@ -554,15 +592,15 @@ export default function ChecklistPage() {
                             />
                           </label>
 
-                          {/* Flag toggle */}
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             <button
                               type="button"
                               onClick={() => handleUpdateTask(task.id, { flagged: !task.flagged })}
                               style={{
                                 ...tinyBtnStyle,
-                                background: task.flagged ? "#f59e0b" : "#333",
-                                color: task.flagged ? "#111" : "#aaa",
+                                background: task.flagged ? "#fef3c7" : "#f1f5f9",
+                                color: task.flagged ? "#d97706" : "#64748b",
+                                border: task.flagged ? "1px solid #fcd34d" : "1px solid #e2e8f0",
                                 padding: "4px 10px",
                               }}
                             >
@@ -570,9 +608,8 @@ export default function ChecklistPage() {
                             </button>
                           </div>
 
-                          {/* Created at + Delete */}
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
-                            <span style={{ fontSize: 11, opacity: 0.5 }}>
+                            <span style={{ fontSize: "0.7rem", color: "#94a3b8" }}>
                               Created {formatDateTime(task.createdAt)}
                             </span>
                             <button
@@ -598,7 +635,7 @@ export default function ChecklistPage() {
       {suggestions.length > 0 && (
         <div style={suggestionBannerStyle}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span>
+            <span style={{ fontSize: "0.875rem" }}>
               💡 <strong>{suggestions.length}</strong> inventory item{suggestions.length > 1 ? "s" : ""} need purchasing
             </span>
             <button type="button" onClick={handleAddFromInventory} style={addAllBtnStyle}>
@@ -614,30 +651,30 @@ export default function ChecklistPage() {
 // ---- Styles ----
 
 const inputStyle = {
-  padding: "10px 12px",
+  padding: "9px 12px",
   borderRadius: 8,
-  border: "1px solid #444",
-  background: "#1d1d1d",
-  color: "#f5f5f5",
+  border: "1px solid #e2e8f0",
+  background: "#ffffff",
+  color: "#1e293b",
   boxSizing: "border-box",
   width: "100%",
-  fontSize: 14,
+  fontSize: "0.875rem",
+  outline: "none",
 };
 
 const pillStyle = {
-  padding: "6px 14px",
+  padding: "5px 13px",
   borderRadius: 999,
   cursor: "pointer",
-  fontSize: 13,
+  fontSize: "0.8rem",
   fontWeight: 600,
-  border: "1px solid #444",
 };
 
 const taskCardStyle = {
-  padding: "12px 14px",
+  padding: "11px 14px",
   borderRadius: 10,
-  background: "#1a1a1a",
-  border: "1px solid #2a2a2a",
+  background: "#ffffff",
+  border: "1px solid #e2e8f0",
 };
 
 const detailPanelStyle = {
@@ -646,65 +683,69 @@ const detailPanelStyle = {
   padding: "14px 16px",
   marginTop: -1,
   borderRadius: "0 0 10px 10px",
-  background: "#151515",
-  border: "1px solid #2a2a2a",
+  background: "#f8fafc",
+  border: "1px solid #e2e8f0",
   borderTop: "none",
 };
 
 const emptyStyle = {
-  border: "1px dashed #444",
+  border: "2px dashed #cbd5e1",
   borderRadius: 12,
-  padding: 24,
-  background: "#141414",
-  opacity: 0.85,
+  padding: 28,
+  background: "#f8fafc",
   textAlign: "center",
+  color: "#94a3b8",
+  fontSize: "0.875rem",
 };
 
 const errorBoxStyle = {
   marginBottom: 16,
   padding: 12,
   borderRadius: 10,
-  border: "1px solid #6a2d2d",
-  background: "#2a1616",
-  color: "#ffb3b3",
+  border: "1px solid #fecaca",
+  background: "#fef2f2",
+  color: "#dc2626",
+  fontSize: "0.875rem",
 };
 
 const tinyBtnStyle = {
-  padding: "2px 8px",
+  padding: "3px 8px",
   borderRadius: 6,
-  border: "1px solid #444",
-  background: "#333",
-  color: "#f5f5f5",
+  border: "1px solid #e2e8f0",
+  background: "#f1f5f9",
+  color: "#64748b",
   cursor: "pointer",
-  fontSize: 12,
+  fontSize: "0.75rem",
+  marginLeft: 6,
 };
 
 const deleteBtnStyle = {
   padding: "6px 12px",
   borderRadius: 8,
-  border: "1px solid #5a2b2b",
-  background: "#2b1717",
-  color: "#ffb3b3",
+  border: "1px solid #fecaca",
+  background: "#fef2f2",
+  color: "#ef4444",
   cursor: "pointer",
-  fontSize: 12,
+  fontSize: "0.78rem",
+  fontWeight: 500,
 };
 
 const suggestionBannerStyle = {
   marginTop: 24,
   padding: "14px 16px",
   borderRadius: 12,
-  background: "#1b1535",
-  border: "1px solid #3730a3",
-  color: "#c7d2fe",
+  background: "#ede9fe",
+  border: "1px solid #c4b5fd",
+  color: "#5b21b6",
 };
 
 const addAllBtnStyle = {
   padding: "6px 14px",
   borderRadius: 8,
-  border: "1px solid #6366f1",
-  background: "#4f46e5",
+  border: "none",
+  background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
   color: "#fff",
   cursor: "pointer",
   fontWeight: 600,
-  fontSize: 13,
+  fontSize: "0.8rem",
 };
