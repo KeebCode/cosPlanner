@@ -8,13 +8,13 @@ export default function ProjectCard({ project, onDelete, onDescriptionSave }) {
   const [editing, setEditing] = useState(false);
 
   function handleDescriptionClick(e) {
-    e.stopPropagation(); // prevent card navigation
+    e.stopPropagation();
     setEditing(true);
   }
 
   function handleDescriptionBlur() {
     setEditing(false);
-    onDescriptionSave?.(project.id, description); // save on click away
+    onDescriptionSave?.(project.id, description);
   }
 
   return (
@@ -26,15 +26,19 @@ export default function ProjectCard({ project, onDelete, onDescriptionSave }) {
         position: "relative",
         width: 240,
         minHeight: 130,
-        padding: 16,
-        border: "1px solid #2f2f2f",
-        borderRadius: 12,
+        padding: 18,
+        border: hovered ? "1px solid #c4b5fd" : "1px solid #e2e8f0",
+        borderRadius: 14,
         cursor: "pointer",
-        background: "#1e1e1e",
-        color: "#f5f5f5",
-        boxShadow: "0 2px 10px rgba(0,0,0,0.25)",
+        background: "#ffffff",
+        color: "#1e293b",
+        boxShadow: hovered
+          ? "0 4px 16px rgba(109,40,217,0.12)"
+          : "0 1px 4px rgba(0,0,0,0.06)",
+        transition: "border-color 0.2s, box-shadow 0.2s",
       }}
     >
+      {/* Delete button */}
       {hovered && (
         <button
           type="button"
@@ -45,26 +49,51 @@ export default function ProjectCard({ project, onDelete, onDescriptionSave }) {
           }}
           style={{
             position: "absolute",
-            top: 8,
-            right: 8,
+            top: 10,
+            right: 10,
             width: 24,
             height: 24,
             borderRadius: "50%",
-            border: "1px solid #555",
-            background: "#2a2a2a",
-            color: "#ff6b6b",
+            border: "1px solid #fecaca",
+            background: "#fff5f5",
+            color: "#ef4444",
             cursor: "pointer",
             fontWeight: 700,
             padding: 0,
             fontSize: 16,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           ×
         </button>
       )}
 
-      <h4 style={{ margin: "0 0 8px 0", color: "#f5f5f5" }}>{project.name}</h4>
+      {/* Project icon + name */}
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 8,
+            background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "0.9rem",
+            color: "white",
+            flexShrink: 0,
+          }}
+        >
+          ✂
+        </div>
+        <h4 style={{ margin: 0, color: "#1e293b", fontSize: "0.95rem", fontWeight: 600 }}>
+          {project.name}
+        </h4>
+      </div>
 
+      {/* Description */}
       {editing ? (
         <textarea
           autoFocus
@@ -76,9 +105,9 @@ export default function ProjectCard({ project, onDelete, onDescriptionSave }) {
           style={{
             width: "100%",
             minHeight: 60,
-            background: "#2a2a2a",
-            color: "#f5f5f5",
-            border: "1px solid #555",
+            background: "#f8fafc",
+            color: "#1e293b",
+            border: "1px solid #c4b5fd",
             borderRadius: 6,
             padding: "6px 8px",
             fontSize: 12,
@@ -92,7 +121,7 @@ export default function ProjectCard({ project, onDelete, onDescriptionSave }) {
           onClick={handleDescriptionClick}
           style={{
             marginTop: 4,
-            color: description ? "#bdbdbd" : "#666",
+            color: description ? "#64748b" : "#94a3b8",
             fontSize: 12,
             fontStyle: description ? "normal" : "italic",
             minHeight: 40,
@@ -100,11 +129,12 @@ export default function ProjectCard({ project, onDelete, onDescriptionSave }) {
             borderRadius: 6,
             border: "1px solid transparent",
             cursor: "text",
+            margin: 0,
           }}
           onMouseEnter={(e) => {
             e.stopPropagation();
-            e.currentTarget.style.border = "1px solid #444";
-            e.currentTarget.style.background = "#2a2a2a";
+            e.currentTarget.style.border = "1px solid #e2e8f0";
+            e.currentTarget.style.background = "#f8fafc";
           }}
           onMouseLeave={(e) => {
             e.stopPropagation();
