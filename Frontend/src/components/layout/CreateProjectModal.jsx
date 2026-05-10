@@ -1,5 +1,8 @@
+import { useState } from "react";
+
 export default function CreateProjectModal({ onClose, onCreate }) {
-  //uses onClose and onCreate
+  const [name, setName] = useState("");
+
   return (
     <div
       style={{
@@ -12,18 +15,15 @@ export default function CreateProjectModal({ onClose, onCreate }) {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-
-        zIndex: 9999, //sits above the page
+        zIndex: 9999,
       }}
     >
-      {/*modal box */}
       <div
         style={{
           background: "#1e1e1e",
           padding: "30px",
           borderRadius: "12px",
           width: "350px",
-
           boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
           border: "1px solid #333",
         }}
@@ -32,7 +32,8 @@ export default function CreateProjectModal({ onClose, onCreate }) {
         <input
           type="text"
           placeholder="Project name"
-          id="projectInput"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           style={{
             width: "100%",
             padding: "12px",
@@ -44,40 +45,18 @@ export default function CreateProjectModal({ onClose, onCreate }) {
             color: "white",
           }}
         />
+
         <div style={{ display: "flex", justifyContent: "space-between" }}>
-          {/*cancel button*/}
-          <button
-            onClick={onClose}
-            style={{
-              padding: "8px 14px",
-              background: "#333",
-              border: "none",
-              borderRadius: "6px",
-              color: "white",
-              cursor: "pointer",
-            }}
-          >
+          <button onClick={onClose} style={{ padding: "8px 14px" }}>
             Cancel
           </button>
 
-          {/*Create button*/}
           <button
-            onClick={() => {
-              const name = document.getElementById("projectInput").value;
-
-              //checking for empty projects
-              if (name.trim() === "") return;
-              onCreate(name); //send name back to parent
-              onClose(); // close modal
+            onClick={async () => {
+              if (!name.trim()) return;
+              await onCreate(name.trim());
             }}
-            style={{
-                padding:"8px 14px",
-                background:"#3b82f6",
-                border:"none",
-                borderRadius:"6px",
-                color:"white",
-                cursor: "pointer"
-            }}
+            style={{ padding: "8px 14px" }}
           >
             Create
           </button>
