@@ -13,20 +13,3 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const google = new GoogleAuthProvider();
-
-
-
-
-
-
-
-
-
-
-// const admin = require('firebase-admin'); //testing
-// const serviceAccount = require('./serviceAccountKey.json');
-// admin.initializeApp({
-//     credential: admin.credential.cert(serviceAccount)
-// });
-
-// module.exports = {admin};
