@@ -1,17 +1,14 @@
- import { mysqlTable, primaryKey, int, varchar, datetime, timestamp, decimal } from "drizzle-orm/mysql-core"
+import { mysqlTable, primaryKey, int, varchar, datetime, timestamp, decimal } from "drizzle-orm/mysql-core"
 import { sql } from "drizzle-orm"
 
 export const costume = mysqlTable("costume", {
-    //costume_id: int("costume_id").notNull().autoincrement(),
     costume_id: int("costume_id").autoincrement().primaryKey().notNull(),
     cos_user_id: int("cos_user_id").notNull().references(() => user.user_id, { onDelete: "cascade" } ),
     costume_name: varchar("costume_name", { length: 32 }),
     costume_created_at: datetime("costume_created_at", { mode: 'string'}),
     costume_progress: int("costume_progress"),
     costume_description: varchar("costume_description", { length: 32 }),
-    //testing (setup page)
-    measurements_completed: int ("measurements_completed").notNull().default(0),
-
+    measurements_completed: int ("measurements_completed").notNull().default(0), //setup page
     costume_waist_length: int("costume_waist_length"),
     costume_head_circumference: int("costume_head_circumference"),
     costume_hip_length: int("costume_hip_length"),
@@ -45,12 +42,6 @@ export const inventory = mysqlTable("inventory", {
 export const item = mysqlTable("item", {
     item_id: int("item_id").autoincrement().primaryKey().notNull(),
     item_name: varchar("item_name", { length: 100 }).notNull(),
-    // item_fasteners: varchar("item_fasteners", { length: 32 }),
-    // item_trims: varchar("item_trims", { length: 32 }),
-    // item_tools: varchar("item_tools", { length: 32 }),
-    // item_foam: varchar("item_foam", { length: 32 }),
-    // item_filament: varchar("item_filament", { length: 32 }),
-    // item_cloths: varchar("item_cloths", { length: 32 }),
     item_size: int("item_size"),
     item_color: varchar("item_color", { length: 32 }),
     item_category: varchar("item_category", { length: 32 }).notNull().default("other"),
