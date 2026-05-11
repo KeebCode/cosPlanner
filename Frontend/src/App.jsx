@@ -11,6 +11,7 @@ import ProjectSetupPage from "./pages/ProjectSetupPage";
 import InventoryPage from "./pages/InventoryPage";
 import ChecklistPage from "./pages/ChecklistPage"; // new
 import ChecklistDashboard from "./pages/ChecklistDashboard";
+import ProfilePage from "./pages/ProfilePage";
 
 export default function App() {
   return (
@@ -36,6 +37,7 @@ export default function App() {
             />
             <Route path="project/:id/inventory" element={<InventoryPage />} />
             <Route path="project/:id/checklist" element={<ChecklistPage />} />
+            <Route path="profile" element={<ProfilePage />} />
           </Route>
         </Routes>
       </BrowserRouter>

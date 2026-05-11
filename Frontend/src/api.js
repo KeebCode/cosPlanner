@@ -269,3 +269,19 @@ export function getOverdueChecklists(token) {
     token
   );
 }
+
+export function getProfile(token) {
+  return fetchJson("/api/profile", { method: "GET" }, token);
+}
+
+export function updateProfile(token, payload) {
+  return fetchJson(
+    "/api/profile",
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+    token
+  );
+}

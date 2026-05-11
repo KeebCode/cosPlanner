@@ -91,8 +91,9 @@ export default function ChecklistDashboard() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
         {projects.map((project) => {
           const summary = summaries[project.id] || { allCount: 0, todayCount: 0, scheduledCount: 0, completedCount: 0, overdueCount: 0 };
-          const donePercent = summary.allCount
-            ? Math.round((summary.completedCount / summary.allCount) * 100)
+          const totalCount = summary.allCount + summary.completedCount;
+          const donePercent = totalCount
+            ? Math.round((summary.completedCount / totalCount) * 100)
             : 0;
 
           return (

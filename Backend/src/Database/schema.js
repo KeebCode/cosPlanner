@@ -1,4 +1,4 @@
-import { mysqlTable, primaryKey, int, varchar, datetime, timestamp, decimal } from "drizzle-orm/mysql-core"
+import { mysqlTable, primaryKey, int, varchar, datetime, timestamp, decimal, text } from "drizzle-orm/mysql-core"
 import { sql } from "drizzle-orm"
 
 export const costume = mysqlTable("costume", {
@@ -75,6 +75,8 @@ export const user = mysqlTable("user", {
     user_name: varchar("user_name", { length: 32 }).notNull(),
     user_password: varchar("user_password", { length: 64 }).notNull(),
     user_email: varchar("user_email", { length: 64 }).notNull(),
+    bio: varchar("bio", { length: 200 }),
+    profile_picture: text("profile_picture"),
 },
 (table) => [
     primaryKey({ columns: [table.user_id], name: "user_user_id"}),

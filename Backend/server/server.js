@@ -8,21 +8,21 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 const app = express();
 const PORT = 5000;
-app.use(helmet());
-app.use(express.json());
-app.use(express.urlencoded({extended: true}));
-app.use(requestLogger);
 
 app.use(cors({
-  //origin: "*"
-  // Allow the local Vite frontend during development.
   origin: [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "https://localhost:5173",
     "https://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
   ],
 }));
+app.use(helmet());
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
+app.use(requestLogger);
 
 //doesnt work
 app.post('/api/users', async (req, res)=> {
@@ -1184,7 +1184,52 @@ app.get("/api/checklists/overdue", verifyToken, async (req, res) => {
   }
 });
 
-//middleware 
+// GET /api/profile — get own profile
+app.get("/api/profile", verifyToken, async (req, res) => {
+  try {
+    const dbUser = await findOrCreateDatabaseUser(req.user);
+    const rows = await database
+      .select({
+        user_id: user.user_id,
+        user_name: user.user_name,
+        user_email: user.user_email,
+        bio: user.bio,
+        profile_picture: user.profile_picture,
+      })
+      .from(user)
+      .where(eq(user.user_id, dbUser.user_id))
+      .limit(1);
+    return res.json(rows[0]);
+  } catch (error) {
+    console.error("Failed to fetch profile", error);
+    res.status(500).json({ error: "Failed to fetch profile." });
+  }
+});
+
+// PATCH /api/profile — update name, bio, profile picture
+app.patch("/api/profile", verifyToken, async (req, res) => {
+  try {
+    const dbUser = await findOrCreateDatabaseUser(req.user);
+    const { user_name, bio, profile_picture } = req.body;
+
+    const updates = {};
+    if (user_name !== undefined) updates.user_name = user_name.trim();
+    if (bio !== undefined) updates.bio = bio.trim();
+    if (profile_picture !== undefined) updates.profile_picture = profile_picture;
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: "No fields to update." });
+    }
+
+    await database.update(user).set(updates).where(eq(user.user_id, dbUser.user_id));
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("Failed to update profile", error);
+    res.status(500).json({ error: "Failed to update profile." });
+  }
+});
+
+//middleware
 function requestLogger(req, res, next) {
   const now = new Date().toISOString();
   console.log(`[${now}] ${req.method} ${req.originalUrl}`);

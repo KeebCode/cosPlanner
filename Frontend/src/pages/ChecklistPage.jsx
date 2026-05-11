@@ -74,6 +74,86 @@ function getCategoryColor(category, allCategories) {
   return CATEGORY_COLORS[idx % CATEGORY_COLORS.length];
 }
 
+function TaskDetailPanel({ task, onUpdate, onDelete }) {
+  const [localNotes, setLocalNotes] = useState(task.notes ?? "");
+  const [localCategory, setLocalCategory] = useState(task.category ?? "");
+
+  return (
+    <div style={detailPanelStyle}>
+      <label style={{ display: "grid", gap: 4, fontSize: "0.82rem" }}>
+        <span style={{ color: "#64748b" }}>Notes</span>
+        <textarea
+          value={localNotes}
+          onChange={(e) => setLocalNotes(e.target.value)}
+          onBlur={() => onUpdate(task.id, { notes: localNotes })}
+          placeholder="Write notes about this task..."
+          rows={3}
+          style={{ ...inputStyle, resize: "vertical" }}
+        />
+      </label>
+
+      <label style={{ display: "grid", gap: 4, fontSize: "0.82rem" }}>
+        <span style={{ color: "#64748b" }}>Due Date & Time</span>
+        <input
+          type="datetime-local"
+          value={task.dueDate ? task.dueDate.slice(0, 16) : ""}
+          onChange={(e) => onUpdate(task.id, { dueDate: e.target.value || null })}
+          style={inputStyle}
+        />
+      </label>
+
+      <label style={{ display: "grid", gap: 4, fontSize: "0.82rem" }}>
+        <span style={{ color: "#64748b" }}>Urgency</span>
+        <select
+          value={task.urgency}
+          onChange={(e) => onUpdate(task.id, { urgency: e.target.value })}
+          style={inputStyle}
+        >
+          {URGENCY_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+      </label>
+
+      <label style={{ display: "grid", gap: 4, fontSize: "0.82rem" }}>
+        <span style={{ color: "#64748b" }}>Category</span>
+        <input
+          value={localCategory}
+          onChange={(e) => setLocalCategory(e.target.value)}
+          onBlur={() => onUpdate(task.id, { category: localCategory })}
+          placeholder="e.g. Cutting, Sewing, Shopping..."
+          style={inputStyle}
+        />
+      </label>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <button
+          type="button"
+          onClick={() => onUpdate(task.id, { flagged: !task.flagged })}
+          style={{
+            ...tinyBtnStyle,
+            background: task.flagged ? "#fef3c7" : "#f1f5f9",
+            color: task.flagged ? "#d97706" : "#64748b",
+            border: task.flagged ? "1px solid #fcd34d" : "1px solid #e2e8f0",
+            padding: "4px 10px",
+          }}
+        >
+          🚩 {task.flagged ? "Flagged" : "Flag"}
+        </button>
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
+        <span style={{ fontSize: "0.7rem", color: "#94a3b8" }}>
+          Created {task.createdAt ? new Date(task.createdAt).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }) : ""}
+        </span>
+        <button type="button" onClick={() => onDelete(task)} style={deleteBtnStyle}>
+          Delete
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function ChecklistPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -533,94 +613,11 @@ export default function ChecklistPage() {
 
                       {/* Expanded detail panel */}
                       {expanded && (
-                        <div style={detailPanelStyle}>
-                          <label style={{ display: "grid", gap: 4, fontSize: "0.82rem" }}>
-                            <span style={{ color: "#64748b" }}>Notes</span>
-                            <textarea
-                              value={task.notes}
-                              onChange={(e) =>
-                                setTasks((prev) =>
-                                  prev.map((t) =>
-                                    t.id === task.id ? { ...t, notes: e.target.value } : t
-                                  )
-                                )
-                              }
-                              onBlur={() => handleUpdateTask(task.id, { notes: task.notes })}
-                              placeholder="Write notes about this task..."
-                              rows={3}
-                              style={{ ...inputStyle, resize: "vertical" }}
-                            />
-                          </label>
-
-                          <label style={{ display: "grid", gap: 4, fontSize: "0.82rem" }}>
-                            <span style={{ color: "#64748b" }}>Due Date & Time</span>
-                            <input
-                              type="datetime-local"
-                              value={task.dueDate ? task.dueDate.slice(0, 16) : ""}
-                              onChange={(e) => handleUpdateTask(task.id, { dueDate: e.target.value || null })}
-                              style={inputStyle}
-                            />
-                          </label>
-
-                          <label style={{ display: "grid", gap: 4, fontSize: "0.82rem" }}>
-                            <span style={{ color: "#64748b" }}>Urgency</span>
-                            <select
-                              value={task.urgency}
-                              onChange={(e) => handleUpdateTask(task.id, { urgency: e.target.value })}
-                              style={inputStyle}
-                            >
-                              {URGENCY_OPTIONS.map((opt) => (
-                                <option key={opt.value} value={opt.value}>{opt.label}</option>
-                              ))}
-                            </select>
-                          </label>
-
-                          <label style={{ display: "grid", gap: 4, fontSize: "0.82rem" }}>
-                            <span style={{ color: "#64748b" }}>Category</span>
-                            <input
-                              value={task.category}
-                              onChange={(e) =>
-                                setTasks((prev) =>
-                                  prev.map((t) =>
-                                    t.id === task.id ? { ...t, category: e.target.value } : t
-                                  )
-                                )
-                              }
-                              onBlur={() => handleUpdateTask(task.id, { category: task.category })}
-                              placeholder="e.g. Cutting, Sewing, Shopping..."
-                              style={inputStyle}
-                            />
-                          </label>
-
-                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <button
-                              type="button"
-                              onClick={() => handleUpdateTask(task.id, { flagged: !task.flagged })}
-                              style={{
-                                ...tinyBtnStyle,
-                                background: task.flagged ? "#fef3c7" : "#f1f5f9",
-                                color: task.flagged ? "#d97706" : "#64748b",
-                                border: task.flagged ? "1px solid #fcd34d" : "1px solid #e2e8f0",
-                                padding: "4px 10px",
-                              }}
-                            >
-                              🚩 {task.flagged ? "Flagged" : "Flag"}
-                            </button>
-                          </div>
-
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
-                            <span style={{ fontSize: "0.7rem", color: "#94a3b8" }}>
-                              Created {formatDateTime(task.createdAt)}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteTask(task)}
-                              style={deleteBtnStyle}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
+                        <TaskDetailPanel
+                          task={task}
+                          onUpdate={handleUpdateTask}
+                          onDelete={handleDeleteTask}
+                        />
                       )}
                     </div>
                   );

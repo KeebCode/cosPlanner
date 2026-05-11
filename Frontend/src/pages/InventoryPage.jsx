@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { auth } from "../firebase";
 import {
   createInventoryItem,
@@ -88,30 +88,30 @@ function formatCurrency(value) {
 function getStatusStyles(status) {
   if (status === "owned") {
     return {
-      cardBorder: "1px solid #1f7a3d",
-      cardBackground: "#102617",
-      textColor: "#7cff9e",
-      badgeBackground: "#16351f",
-      badgeBorder: "1px solid #24532f",
+      cardBorderLeft: "3px solid #22c55e",
+      textColor: "#16a34a",
+      badgeBackground: "#dcfce7",
+      badgeColor: "#16a34a",
+      badgeBorder: "1px solid #bbf7d0",
     };
   }
 
   if (status === "low_on_stock") {
     return {
-      cardBorder: "1px solid #a37a12",
-      cardBackground: "#2b220b",
-      textColor: "#ffd54a",
-      badgeBackground: "#3a2c0d",
-      badgeBorder: "1px solid #7a5d14",
+      cardBorderLeft: "3px solid #f59e0b",
+      textColor: "#d97706",
+      badgeBackground: "#fef3c7",
+      badgeColor: "#d97706",
+      badgeBorder: "1px solid #fde68a",
     };
   }
 
   return {
-    cardBorder: "1px solid #7a2323",
-    cardBackground: "#2a1111",
-    textColor: "#ff8f8f",
-    badgeBackground: "#341414",
-    badgeBorder: "1px solid #5c2121",
+    cardBorderLeft: "3px solid #ef4444",
+    textColor: "#dc2626",
+    badgeBackground: "#fef2f2",
+    badgeColor: "#dc2626",
+    badgeBorder: "1px solid #fecaca",
   };
 }
 
@@ -124,6 +124,7 @@ function getStatusLabel(status) {
 export default function InventoryPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [projectName, setProjectName] = useState("");
   const [projects, setProjects] = useState([]);
@@ -179,6 +180,13 @@ export default function InventoryPage() {
   useEffect(() => {
     loadInventoryPage();
   }, [id]);
+
+  useEffect(() => {
+    if (searchParams.get("add") === "1") {
+      openAddModal();
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams]);
 
   function handleProjectChange(event) {
     const nextProjectId = event.target.value;
@@ -321,93 +329,54 @@ export default function InventoryPage() {
         : "";
 
   if (loading) {
-    return <div>Loading inventory...</div>;
+    return <div style={{ padding: "28px 32px", color: "#64748b", fontSize: "0.875rem" }}>Loading inventory...</div>;
   }
 
   return (
-    <div style={{ color: "#f5f5f5" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          gap: 16,
-          flexWrap: "wrap",
-          marginBottom: 20,
-        }}
-      >
-        <div style={{ display: "grid", gap: 12 }}>
-          <div>
-            <h1 style={{ marginBottom: 6 }}>Inventory</h1>
-            <p style={{ margin: 0, opacity: 0.75 }}>
-              {projectName || "Project"} | Project ID: {id}
-            </p>
-          </div>
-
-          <div style={{ display: "grid", gap: 6 }}>
-            <label style={{ fontSize: 13, opacity: 0.8 }}>
-              Select Project
-            </label>
-            <select
-              value={String(id)}
-              onChange={handleProjectChange}
-              style={selectStyle}
-            >
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
-          </div>
+    <div style={{ color: "#1e293b", padding: "28px 32px", maxWidth: 900 }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span style={{ fontSize: 22, color: "#6d28d9" }}>📦</span>
+          <h1 style={{ margin: 0, fontSize: "1.5rem", fontWeight: 700, color: "#1e293b" }}>Inventory</h1>
         </div>
-
         <button type="button" onClick={openAddModal} style={addButtonStyle}>
           + Add Item
         </button>
       </div>
 
+      <p style={{ margin: "0 0 20px 0", color: "#64748b", fontSize: "0.82rem" }}>{projectName || "Project"}</p>
+
+      {/* Project selector */}
+      <div style={{ marginBottom: 20 }}>
+        <select value={String(id)} onChange={handleProjectChange} style={selectStyle}>
+          {projects.map((project) => (
+            <option key={project.id} value={project.id}>{project.name}</option>
+          ))}
+        </select>
+      </div>
+
       {pageError && <div style={errorBoxStyle}>{pageError}</div>}
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-          gap: 12,
-          marginBottom: 20,
-        }}
-      >
+      {/* Summary cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 20 }}>
         <div style={summaryCardStyle}>
-          <div style={{ opacity: 0.75, fontSize: 13 }}>Total Cost</div>
-          <div style={{ fontSize: 24, fontWeight: 700, marginTop: 8 }}>
-            {formatCurrency(totalCost)}
-          </div>
+          <div style={{ color: "#64748b", fontSize: 13 }}>Total Cost</div>
+          <div style={{ fontSize: 24, fontWeight: 700, marginTop: 8, color: "#1e293b" }}>{formatCurrency(totalCost)}</div>
         </div>
-
         <div style={summaryCardStyle}>
-          <div style={{ opacity: 0.75, fontSize: 13 }}>Owned Progress</div>
-          <div style={{ fontSize: 24, fontWeight: 700, marginTop: 8 }}>
-            {ownedCount} / {items.length}
-          </div>
-          <div style={{ marginTop: 6, opacity: 0.8 }}>{progressPercent}%</div>
+          <div style={{ color: "#64748b", fontSize: 13 }}>Owned Progress</div>
+          <div style={{ fontSize: 24, fontWeight: 700, marginTop: 8, color: "#1e293b" }}>{ownedCount} / {items.length}</div>
+          <div style={{ marginTop: 4, color: "#64748b", fontSize: 13 }}>{progressPercent}%</div>
         </div>
-
         <div style={summaryCardStyle}>
-          <div style={{ opacity: 0.75, fontSize: 13 }}>Need To Buy</div>
-          <div style={{ fontSize: 24, fontWeight: 700, marginTop: 8 }}>
-            {items.length - ownedCount}
-          </div>
+          <div style={{ color: "#64748b", fontSize: 13 }}>Need To Buy</div>
+          <div style={{ fontSize: 24, fontWeight: 700, marginTop: 8, color: "#1e293b" }}>{items.length - ownedCount}</div>
         </div>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          gap: 10,
-          flexWrap: "wrap",
-          marginBottom: 20,
-        }}
-      >
+      {/* Filter pills */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
         {[
           { value: "all", label: "All" },
           { value: "owned", label: "Owned" },
@@ -419,15 +388,14 @@ export default function InventoryPage() {
             type="button"
             onClick={() => setFilter(tab.value)}
             style={{
-              padding: "8px 14px",
+              padding: "6px 16px",
               borderRadius: 999,
-              border:
-                filter === tab.value
-                  ? "1px solid #f5f5f5"
-                  : "1px solid #444",
-              background: filter === tab.value ? "#f5f5f5" : "#1b1b1b",
-              color: filter === tab.value ? "#111" : "#f5f5f5",
+              border: filter === tab.value ? "1px solid #c4b5fd" : "1px solid #e2e8f0",
+              background: filter === tab.value ? "#ede9fe" : "#f1f5f9",
+              color: filter === tab.value ? "#6d28d9" : "#64748b",
+              fontWeight: filter === tab.value ? 600 : 400,
               cursor: "pointer",
+              fontSize: "0.82rem",
             }}
           >
             {tab.label}
@@ -435,10 +403,11 @@ export default function InventoryPage() {
         ))}
       </div>
 
+      {/* Item list */}
       {filteredItems.length === 0 ? (
-        <div style={emptyStateStyle}>No inventory items yet.</div>
+        <div style={emptyStateStyle}>No inventory items yet. Add one above!</div>
       ) : (
-        <div style={{ display: "grid", gap: 12 }}>
+        <div style={{ display: "grid", gap: 10 }}>
           {filteredItems.map((entry) => {
             const statusStyles = getStatusStyles(entry.status);
             const statusLabel = getStatusLabel(entry.status);
@@ -448,85 +417,41 @@ export default function InventoryPage() {
                 key={entry.itemId}
                 style={{
                   ...itemCardStyle,
-                  border: statusStyles.cardBorder,
-                  background: statusStyles.cardBackground,
+                  borderLeft: statusStyles.cardBorderLeft,
                 }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    gap: 12,
-                    flexWrap: "wrap",
-                  }}
-                >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
                   <div>
-                    <div style={{ fontSize: 18, fontWeight: 700 }}>
-                      {entry.name}
-                    </div>
-                    <div style={{ marginTop: 8, opacity: 0.9 }}>
-                      {entry.quantity} {entry.quantityUnit} |{" "}
-                      {formatCurrency(entry.cost)} |{" "}
-                      <span
-                        style={{
-                          color: statusStyles.textColor,
-                          fontWeight: 700,
-                        }}
-                      >
-                        {statusLabel}
-                      </span>
+                    <div style={{ fontSize: "1rem", fontWeight: 700, color: "#1e293b" }}>{entry.name}</div>
+                    <div style={{ marginTop: 6, fontSize: "0.875rem", color: "#475569" }}>
+                      {entry.quantity} {entry.quantityUnit} · {formatCurrency(entry.cost)} ·{" "}
+                      <span style={{ color: statusStyles.textColor, fontWeight: 600 }}>{statusLabel}</span>
                     </div>
                     {(entry.size || entry.color) && (
-                      <div style={{ marginTop: 6, opacity: 0.8, fontSize: 13 }}>
+                      <div style={{ marginTop: 4, fontSize: "0.78rem", color: "#64748b" }}>
                         {entry.size ? `Size: ${entry.size}` : ""}
-                        {entry.size && entry.color ? " | " : ""}
+                        {entry.size && entry.color ? " · " : ""}
                         {entry.color ? `Color: ${entry.color}` : ""}
                       </div>
                     )}
+                    {entry.location && (
+                      <div style={{ marginTop: 4, fontSize: "0.78rem", color: "#94a3b8" }}>📍 {entry.location}</div>
+                    )}
                   </div>
 
-                  <div
-                    style={{
-                      ...categoryTagStyle,
-                      border: statusStyles.badgeBorder,
-                      background: statusStyles.badgeBackground,
-                      color: statusStyles.textColor,
-                    }}
-                  >
+                  <span style={{
+                    ...categoryTagStyle,
+                    background: statusStyles.badgeBackground,
+                    color: statusStyles.badgeColor,
+                    border: statusStyles.badgeBorder,
+                  }}>
                     {entry.category || "other"}
-                  </div>
+                  </span>
                 </div>
 
-                {entry.location ? (
-                  <div style={{ marginTop: 10, opacity: 0.72, fontSize: 13 }}>
-                    Location: {entry.location}
-                  </div>
-                ) : null}
-
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 10,
-                    marginTop: 14,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <button
-                    type="button"
-                    onClick={() => openEditModal(entry)}
-                    style={editButtonStyle}
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(entry)}
-                    style={deleteButtonStyle}
-                  >
-                    Delete
-                  </button>
+                <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                  <button type="button" onClick={() => openEditModal(entry)} style={editButtonStyle}>Edit</button>
+                  <button type="button" onClick={() => handleDelete(entry)} style={deleteButtonStyle}>Delete</button>
                 </div>
               </div>
             );
@@ -536,11 +461,8 @@ export default function InventoryPage() {
 
       {(showAddModal || editingItem) && (
         <div onClick={closeModal} style={modalOverlayStyle}>
-          <div
-            onClick={(event) => event.stopPropagation()}
-            style={modalCardStyle}
-          >
-            <h2 style={{ marginTop: 0 }}>
+          <div onClick={(event) => event.stopPropagation()} style={modalCardStyle}>
+            <h2 style={{ marginTop: 0, fontSize: "1.2rem", fontWeight: 700, color: "#1e293b" }}>
               {editingItem ? "Edit Item" : "Add Item"}
             </h2>
 
@@ -738,70 +660,75 @@ export default function InventoryPage() {
 }
 
 const selectStyle = {
-  minWidth: 260,
-  padding: "10px 12px",
-  borderRadius: 10,
-  border: "1px solid #444",
-  background: "#1d1d1d",
-  color: "#f5f5f5",
+  minWidth: 220,
+  padding: "8px 12px",
+  borderRadius: 8,
+  border: "1px solid #e2e8f0",
+  background: "#ffffff",
+  color: "#1e293b",
+  fontSize: "0.875rem",
 };
 
 const addButtonStyle = {
-  padding: "10px 16px",
+  padding: "9px 18px",
   borderRadius: 10,
-  border: "1px solid #444",
-  background: "#f5f5f5",
-  color: "#111",
+  border: "none",
+  background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)",
+  color: "#fff",
   cursor: "pointer",
   fontWeight: 600,
+  fontSize: "0.875rem",
 };
 
 const errorBoxStyle = {
   marginBottom: 16,
   padding: 12,
   borderRadius: 10,
-  border: "1px solid #6a2d2d",
-  background: "#2a1616",
-  color: "#ffb3b3",
+  border: "1px solid #fecaca",
+  background: "#fef2f2",
+  color: "#dc2626",
+  fontSize: "0.875rem",
 };
 
 const summaryCardStyle = {
-  border: "1px solid #343434",
+  border: "1px solid #e2e8f0",
   borderRadius: 12,
-  padding: 14,
-  background: "#161616",
+  padding: "16px 20px",
+  background: "#ffffff",
 };
 
 const emptyStateStyle = {
-  border: "1px dashed #444",
+  border: "2px dashed #cbd5e1",
   borderRadius: 12,
-  padding: 24,
-  background: "#141414",
-  opacity: 0.85,
+  padding: 28,
+  background: "#f8fafc",
+  textAlign: "center",
+  color: "#94a3b8",
+  fontSize: "0.875rem",
 };
 
 const itemCardStyle = {
-  border: "1px solid #333",
-  borderRadius: 14,
-  padding: 16,
-  background: "#171717",
+  border: "1px solid #e2e8f0",
+  borderRadius: 12,
+  padding: "16px 20px",
+  background: "#ffffff",
 };
 
 const categoryTagStyle = {
   display: "inline-flex",
   alignItems: "center",
-  padding: "6px 10px",
+  padding: "4px 12px",
   borderRadius: 999,
-  border: "1px solid #444",
-  background: "#202020",
-  fontSize: 12,
+  fontSize: "0.75rem",
+  fontWeight: 600,
   textTransform: "capitalize",
+  flexShrink: 0,
 };
 
 const modalOverlayStyle = {
   position: "fixed",
   inset: 0,
-  background: "rgba(0, 0, 0, 0.65)",
+  background: "rgba(15, 23, 42, 0.4)",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -813,55 +740,64 @@ const modalCardStyle = {
   width: "100%",
   maxWidth: 520,
   borderRadius: 16,
-  border: "1px solid #333",
-  background: "#121212",
-  color: "#f5f5f5",
-  padding: 20,
+  border: "1px solid #e2e8f0",
+  background: "#ffffff",
+  color: "#1e293b",
+  padding: 24,
+  maxHeight: "90vh",
+  overflowY: "auto",
 };
 
 const inputStyle = {
   width: "100%",
-  padding: "10px 12px",
+  padding: "9px 12px",
   borderRadius: 8,
-  border: "1px solid #444",
-  background: "#1d1d1d",
-  color: "#f5f5f5",
+  border: "1px solid #e2e8f0",
+  background: "#f8fafc",
+  color: "#1e293b",
   boxSizing: "border-box",
+  fontSize: "0.875rem",
 };
 
 const primaryButtonStyle = {
-  padding: "10px 14px",
+  padding: "10px 20px",
   borderRadius: 8,
-  border: "1px solid #f5f5f5",
-  background: "#f5f5f5",
-  color: "#111",
+  border: "none",
+  background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)",
+  color: "#fff",
   cursor: "pointer",
   fontWeight: 600,
+  fontSize: "0.875rem",
 };
 
 const secondaryButtonStyle = {
-  padding: "10px 14px",
+  padding: "10px 16px",
   borderRadius: 8,
-  border: "1px solid #444",
-  background: "#1c1c1c",
-  color: "#f5f5f5",
+  border: "1px solid #e2e8f0",
+  background: "#f1f5f9",
+  color: "#64748b",
   cursor: "pointer",
+  fontSize: "0.875rem",
 };
 
 const editButtonStyle = {
-  padding: "8px 12px",
+  padding: "6px 14px",
   borderRadius: 8,
-  border: "1px solid #444",
-  background: "#252525",
-  color: "#f5f5f5",
+  border: "1px solid #e2e8f0",
+  background: "#f1f5f9",
+  color: "#475569",
   cursor: "pointer",
+  fontSize: "0.82rem",
+  fontWeight: 500,
 };
 
 const deleteButtonStyle = {
-  padding: "8px 12px",
+  padding: "6px 14px",
   borderRadius: 8,
-  border: "1px solid #5a2b2b",
-  background: "#2b1717",
-  color: "#ffb3b3",
+  border: "1px solid #fecaca",
+  background: "#fef2f2",
+  color: "#ef4444",
   cursor: "pointer",
+  fontSize: "0.82rem",
+  fontWeight: 500,
 };
