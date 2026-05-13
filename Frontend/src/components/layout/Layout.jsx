@@ -1,5 +1,5 @@
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { auth } from "../../firebase";
 import {
@@ -23,6 +23,10 @@ export default function Layout() {
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const [newProjectName, setNewProjectName] = useState("");
   const [profileData, setProfileData] = useState(null);
+  const [sidebarWidth, setSidebarWidth] = useState(256);
+  const dragging = useRef(false);
+  const dragStartX = useRef(0);
+  const dragStartWidth = useRef(256);
 
   const projectMatch = location.pathname.match(/\/project\/(\d+)/);
   const currentProjectId = projectMatch?.[1];
@@ -137,6 +141,31 @@ export default function Layout() {
     }
   }
 
+  function handleDragStart(e) {
+    dragging.current = true;
+    dragStartX.current = e.clientX;
+    dragStartWidth.current = sidebarWidth;
+    e.preventDefault();
+
+    function onMove(ev) {
+      if (!dragging.current) return;
+      const delta = ev.clientX - dragStartX.current;
+      const next = Math.max(0, Math.min(400, dragStartWidth.current + delta));
+      setSidebarWidth(next);
+    }
+
+    function onUp(ev) {
+      dragging.current = false;
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+      const final = Math.max(0, Math.min(400, dragStartWidth.current + (ev.clientX - dragStartX.current)));
+      setSidebarWidth(final < 60 ? 0 : final);
+    }
+
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  }
+
   function navItemStyle(active, disabled = false) {
     return {
       display: "flex",
@@ -198,7 +227,7 @@ export default function Layout() {
         <span style={{ fontSize: "1.4rem", color: "white" }}>✂</span>
         <div style={{ flex: 1 }}>
           <div style={{ color: "white", fontWeight: 700, fontSize: "1.1rem", lineHeight: 1.2 }}>CosPlanner</div>
-          <div style={{ color: "rgba(255,255,255,0.72)", fontSize: "0.75rem" }}>{user?.displayName || user?.email || ""}</div>
+          <div style={{ color: "rgba(255,255,255,0.72)", fontSize: "0.75rem" }}>{profileData?.user_name || user?.displayName || user?.email || ""}</div>
         </div>
 
         {/* Profile avatar */}
@@ -231,15 +260,42 @@ export default function Layout() {
       </header>
 
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        {/* Collapsed pull-tab */}
+        {sidebarWidth === 0 && (
+          <button
+            onClick={() => setSidebarWidth(256)}
+            title="Open sidebar"
+            style={{
+              width: 20,
+              flexShrink: 0,
+              background: "#ffffff",
+              border: "none",
+              borderRight: "1px solid #e2e8f0",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#94a3b8",
+              fontSize: "0.7rem",
+              padding: 0,
+            }}
+          >
+            ›
+          </button>
+        )}
+
         {/* Sidebar */}
         <div style={{
-          width: "256px",
+          width: sidebarWidth,
+          minWidth: 0,
           background: "#ffffff",
           borderRight: "1px solid #e2e8f0",
           display: "flex",
           flexDirection: "column",
           flexShrink: 0,
           overflow: "hidden",
+          position: "relative",
+          transition: dragging.current ? "none" : "width 0.15s ease",
         }}>
           <div style={{ flex: 1, overflowY: "auto", padding: "6px 8px" }}>
             <div style={sectionLabel}>Navigation</div>
@@ -430,6 +486,23 @@ export default function Layout() {
               Log Out
             </button>
           </div>
+
+          {/* Drag handle */}
+          <div
+            onMouseDown={handleDragStart}
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              width: 6,
+              height: "100%",
+              cursor: "col-resize",
+              zIndex: 10,
+              background: "transparent",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(109,40,217,0.15)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+          />
         </div>
 
         {/* Main content */}

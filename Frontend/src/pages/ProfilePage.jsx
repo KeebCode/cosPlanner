@@ -249,50 +249,58 @@ export default function ProfilePage() {
           </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
-            {projects.map((p) => (
-              <div
-                key={p.id}
-                onClick={() => navigate(`/project/${p.id}/planning`)}
-                style={{
-                  background: "#fff",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: 14,
-                  padding: "18px 16px",
-                  cursor: "pointer",
-                  transition: "border-color 0.15s, box-shadow 0.15s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "#c4b5fd";
-                  e.currentTarget.style.boxShadow = "0 4px 16px rgba(109,40,217,0.1)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "#e2e8f0";
-                  e.currentTarget.style.boxShadow = "none";
-                }}
-              >
-                <div style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 10,
-                  background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "1rem",
-                  marginBottom: 10,
-                }}>
-                  ✂
-                </div>
-                <div style={{ fontWeight: 600, fontSize: "0.9rem", color: "#1e293b", marginBottom: 4 }}>
-                  {p.name}
-                </div>
-                {p.description && (
-                  <div style={{ fontSize: "0.75rem", color: "#94a3b8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {p.description}
+            {projects.map((p) => {
+              const storedIcon = localStorage.getItem(`project-icon-${p.id}`) || "✂";
+              const isImgIcon = storedIcon.startsWith("data:");
+              return (
+                <div
+                  key={p.id}
+                  onClick={() => navigate(`/project/${p.id}/planning`)}
+                  style={{
+                    background: "#fff",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: 14,
+                    padding: "18px 16px",
+                    cursor: "pointer",
+                    transition: "border-color 0.15s, box-shadow 0.15s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "#c4b5fd";
+                    e.currentTarget.style.boxShadow = "0 4px 16px rgba(109,40,217,0.1)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "#e2e8f0";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
+                >
+                  <div style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 10,
+                    background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "1rem",
+                    marginBottom: 10,
+                    overflow: "hidden",
+                  }}>
+                    {isImgIcon
+                      ? <img src={storedIcon} alt="icon" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      : storedIcon
+                    }
                   </div>
-                )}
-              </div>
-            ))}
+                  <div style={{ fontWeight: 600, fontSize: "0.9rem", color: "#1e293b", marginBottom: 4 }}>
+                    {p.name}
+                  </div>
+                  {p.description && (
+                    <div style={{ fontSize: "0.75rem", color: "#94a3b8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {p.description}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

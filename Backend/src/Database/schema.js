@@ -1,4 +1,4 @@
-import { mysqlTable, primaryKey, int, varchar, datetime, timestamp, decimal, text } from "drizzle-orm/mysql-core"
+import { mysqlTable, primaryKey, int, varchar, datetime, timestamp, decimal, text, json } from "drizzle-orm/mysql-core"
 import { sql } from "drizzle-orm"
 
 export const costume = mysqlTable("costume", {
@@ -81,6 +81,34 @@ export const user = mysqlTable("user", {
 (table) => [
     primaryKey({ columns: [table.user_id], name: "user_user_id"}),
 ]);
+
+export const fabricLayouts = mysqlTable("FabricLayouts", {
+    layout_id:         int("layout_id").primaryKey().autoincrement(),
+    layout_costume_id: int("layout_costume_id").notNull(),
+    layout_name:       varchar("layout_name", { length: 64 }).notNull().default("Untitled Layout"),
+    fabric_width_cm:   decimal("fabric_width_cm", { precision: 8, scale: 2 }).notNull().default("150.00"),
+    fabric_length_cm:  decimal("fabric_length_cm", { precision: 8, scale: 2 }).notNull().default("300.00"),
+    fabric_grain:      varchar("fabric_grain", { length: 16 }).notNull().default("grainline"),
+    layout_json:       json("layout_json"),
+    created_at:        datetime("created_at"),
+    updated_at:        datetime("updated_at"),
+});
+
+export const patternBlocks = mysqlTable("PatternBlocks", {
+    block_id:          int("block_id").primaryKey().autoincrement(),
+    block_layout_id:   int("block_layout_id").notNull(),
+    block_name:        varchar("block_name", { length: 64 }).notNull(),
+    block_vertices:    json("block_vertices").notNull(),
+    block_width_cm:    decimal("block_width_cm", { precision: 8, scale: 2 }).notNull(),
+    block_height_cm:   decimal("block_height_cm", { precision: 8, scale: 2 }).notNull(),
+    pos_x_cm:          decimal("pos_x_cm", { precision: 8, scale: 2 }).notNull().default("0.00"),
+    pos_y_cm:          decimal("pos_y_cm", { precision: 8, scale: 2 }).notNull().default("0.00"),
+    rotation_deg:      decimal("rotation_deg", { precision: 6, scale: 2 }).notNull().default("0.00"),
+    grain_alignment:   varchar("grain_alignment", { length: 16 }).notNull().default("grainline"),
+    measurements:      json("measurements"),
+    created_at:        datetime("created_at"),
+    updated_at:        datetime("updated_at"),
+});
 
 // export const checklist = mysqlTable("checklist", {
 //     checklist_id: int("checklist_id").autoincrement().primaryKey().notNull(),

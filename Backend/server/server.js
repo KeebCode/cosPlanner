@@ -3,7 +3,7 @@ import cors from "cors";
 import { desc, eq, and , gte, lt, not } from "drizzle-orm";
 import verifyToken from "./Auth/middleware/auth.js";
 import { database } from '../src/Database/connection.js';
-import { user, costume, item , inventory, checklist} from '../src/Database/schema.js';
+import { user, costume, item , inventory, checklist, fabricLayouts, patternBlocks } from '../src/Database/schema.js';
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 const app = express();
@@ -1227,6 +1227,231 @@ app.patch("/api/profile", verifyToken, async (req, res) => {
     console.error("Failed to update profile", error);
     res.status(500).json({ error: "Failed to update profile." });
   }
+});
+
+// ── Garment Planning helpers ──────────────────────────────────────────────────
+
+function garmentGrainToRotation(alignment) {
+  const map = { grainline: 0, crossgrain: 90, truebias: 45, none: null };
+  return map[alignment] ?? null;
+}
+
+function garmentRotatePoint(x, y, deg) {
+  const r = (deg * Math.PI) / 180;
+  return { x: x * Math.cos(r) - y * Math.sin(r), y: x * Math.sin(r) + y * Math.cos(r) };
+}
+
+function garmentAabb(vertices, rotation = 0) {
+  const pts = vertices.map(({ x, y }) => garmentRotatePoint(x, y, rotation));
+  const xs = pts.map(p => p.x);
+  const ys = pts.map(p => p.y);
+  return { width: Math.max(...xs) - Math.min(...xs), height: Math.max(...ys) - Math.min(...ys) };
+}
+
+function garmentOverlaps(a, b, gap = 0.5) {
+  return !(
+    a.pos_x_cm + a.block_width_cm + gap <= b.pos_x_cm ||
+    b.pos_x_cm + b.block_width_cm + gap <= a.pos_x_cm ||
+    a.pos_y_cm + a.block_height_cm + gap <= b.pos_y_cm ||
+    b.pos_y_cm + b.block_height_cm + gap <= a.pos_y_cm
+  );
+}
+
+function garmentBinPack(blocks, fw, fl, gap = 0.5) {
+  const oriented = blocks.map(b => {
+    const canonRot = garmentGrainToRotation(b.grain_alignment);
+    const finalRot = canonRot !== null ? canonRot : parseFloat(b.rotation_deg) ?? 0;
+    const box = garmentAabb(b.block_vertices, finalRot);
+    return { ...b, rotation_deg: finalRot, block_width_cm: box.width, block_height_cm: box.height };
+  });
+  oriented.sort((a, b) => b.block_width_cm * b.block_height_cm - a.block_width_cm * a.block_height_cm);
+  const placed = [];
+  for (const block of oriented) {
+    let bestX = 0, bestY = 0, found = false;
+    outer: for (let y = 0; y + block.block_height_cm <= fl + 0.001; y += 0.5) {
+      for (let x = 0; x + block.block_width_cm <= fw + 0.001; x += 0.5) {
+        if (!placed.some(p => garmentOverlaps({ ...block, pos_x_cm: x, pos_y_cm: y }, p, gap))) {
+          bestX = x; bestY = y; found = true; break outer;
+        }
+      }
+    }
+    placed.push({ ...block, pos_x_cm: found ? bestX : block.pos_x_cm, pos_y_cm: found ? bestY : block.pos_y_cm });
+  }
+  return placed;
+}
+
+function garmentBuildDXF(layout, blocks) {
+  const L = (x1,y1,x2,y2,layer='0') => `  0\nLINE\n  8\n${layer}\n 10\n${x1.toFixed(4)}\n 20\n${y1.toFixed(4)}\n 30\n0.0000\n 11\n${x2.toFixed(4)}\n 21\n${y2.toFixed(4)}\n 31\n0.0000`;
+  const T = (x,y,str,layer='TEXT',h=2) => `  0\nTEXT\n  8\n${layer}\n 10\n${x.toFixed(4)}\n 20\n${y.toFixed(4)}\n 30\n0.0000\n 40\n${h}\n  1\n${str}`;
+  const fw = parseFloat(layout.fabric_width_cm), fl = parseFloat(layout.fabric_length_cm);
+  const lines = ['  0\nSECTION\n  2\nHEADER\n  9\n$ACADVER\n  1\nAC1009\n  0\nENDSEC\n  0\nSECTION\n  2\nENTITIES'];
+  lines.push(L(0,0,fw,0,'FABRIC'),L(fw,0,fw,fl,'FABRIC'),L(fw,fl,0,fl,'FABRIC'),L(0,fl,0,0,'FABRIC'));
+  lines.push(L(fw/2,5,fw/2,fl-5,'GRAINLINE'),T(fw/2+1,fl/2,'GRAIN','GRAINLINE',3));
+  for (const block of blocks) {
+    const px=parseFloat(block.pos_x_cm), py=parseFloat(block.pos_y_cm);
+    const rot=(parseFloat(block.rotation_deg)*Math.PI)/180;
+    const layer=`BLOCK_${block.block_name.replace(/\s+/g,'_').toUpperCase()}`;
+    const verts=block.block_vertices;
+    for (let i=0;i<verts.length;i++) {
+      const a=verts[i], b=verts[(i+1)%verts.length];
+      lines.push(L(px+a.x*Math.cos(rot)-a.y*Math.sin(rot),py+a.x*Math.sin(rot)+a.y*Math.cos(rot),px+b.x*Math.cos(rot)-b.y*Math.sin(rot),py+b.x*Math.sin(rot)+b.y*Math.cos(rot),layer));
+    }
+    lines.push(T(px+1,py+1,block.block_name,layer,1.5));
+  }
+  lines.push('  0\nENDSEC\n  0\nEOF');
+  return lines.join('\n');
+}
+
+// ── Garment Layout routes ─────────────────────────────────────────────────────
+
+app.get("/api/garment/layouts/:costumeId", verifyToken, async (req, res) => {
+  try {
+    const rows = await database.select().from(fabricLayouts)
+      .where(eq(fabricLayouts.layout_costume_id, parseInt(req.params.costumeId)))
+      .orderBy(desc(fabricLayouts.layout_id));
+    res.json(rows);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get("/api/garment/layout/:id", verifyToken, async (req, res) => {
+  try {
+    const rows = await database.select().from(fabricLayouts)
+      .where(eq(fabricLayouts.layout_id, parseInt(req.params.id)));
+    if (!rows.length) return res.status(404).json({ error: 'Layout not found' });
+    res.json(rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post("/api/garment/layout", verifyToken, async (req, res) => {
+  try {
+    const { layout_costume_id, layout_name, fabric_width_cm, fabric_length_cm, fabric_grain } = req.body;
+    const [result] = await database.insert(fabricLayouts).values({
+      layout_costume_id,
+      layout_name: layout_name || 'Untitled Layout',
+      fabric_width_cm: fabric_width_cm || 150,
+      fabric_length_cm: fabric_length_cm || 300,
+      fabric_grain: fabric_grain || 'grainline',
+      created_at: new Date(),
+      updated_at: new Date(),
+    });
+    res.status(201).json({ layout_id: result.insertId, layout_costume_id, layout_name, fabric_width_cm, fabric_length_cm, fabric_grain: fabric_grain || 'grainline' });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.put("/api/garment/layout/:id", verifyToken, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { layout_name, fabric_width_cm, fabric_length_cm, fabric_grain } = req.body;
+    const updates = { updated_at: new Date() };
+    if (layout_name !== undefined) updates.layout_name = layout_name;
+    if (fabric_width_cm !== undefined) updates.fabric_width_cm = fabric_width_cm;
+    if (fabric_length_cm !== undefined) updates.fabric_length_cm = fabric_length_cm;
+    if (fabric_grain !== undefined) updates.fabric_grain = fabric_grain;
+    await database.update(fabricLayouts).set(updates).where(eq(fabricLayouts.layout_id, id));
+    res.json({ layout_id: id, ...updates });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete("/api/garment/layout/:id", verifyToken, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await database.delete(patternBlocks).where(eq(patternBlocks.block_layout_id, id));
+    await database.delete(fabricLayouts).where(eq(fabricLayouts.layout_id, id));
+    res.json({ deleted: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Pattern Block routes ──────────────────────────────────────────────────────
+
+app.get("/api/garment/layout/:layoutId/blocks", verifyToken, async (req, res) => {
+  try {
+    const rows = await database.select().from(patternBlocks)
+      .where(eq(patternBlocks.block_layout_id, parseInt(req.params.layoutId)));
+    res.json(rows);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post("/api/garment/block", verifyToken, async (req, res) => {
+  try {
+    const { block_layout_id, block_name, block_vertices, block_width_cm, block_height_cm, pos_x_cm, pos_y_cm, rotation_deg, grain_alignment, measurements } = req.body;
+    const [result] = await database.insert(patternBlocks).values({
+      block_layout_id,
+      block_name,
+      block_vertices,
+      block_width_cm: block_width_cm || 20,
+      block_height_cm: block_height_cm || 30,
+      pos_x_cm: pos_x_cm || 0,
+      pos_y_cm: pos_y_cm || 0,
+      rotation_deg: rotation_deg || 0,
+      grain_alignment: grain_alignment || 'grainline',
+      measurements: measurements || null,
+      created_at: new Date(),
+      updated_at: new Date(),
+    });
+    res.status(201).json({ block_id: result.insertId, block_layout_id, block_name, block_vertices, block_width_cm, block_height_cm, pos_x_cm: pos_x_cm || 0, pos_y_cm: pos_y_cm || 0, rotation_deg: rotation_deg || 0, grain_alignment: grain_alignment || 'grainline' });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.put("/api/garment/block/:id", verifyToken, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { block_name, block_vertices, block_width_cm, block_height_cm, pos_x_cm, pos_y_cm, rotation_deg, grain_alignment, measurements } = req.body;
+    const updates = { updated_at: new Date() };
+    if (block_name !== undefined) updates.block_name = block_name;
+    if (block_vertices !== undefined) updates.block_vertices = block_vertices;
+    if (block_width_cm !== undefined) updates.block_width_cm = block_width_cm;
+    if (block_height_cm !== undefined) updates.block_height_cm = block_height_cm;
+    if (pos_x_cm !== undefined) updates.pos_x_cm = pos_x_cm;
+    if (pos_y_cm !== undefined) updates.pos_y_cm = pos_y_cm;
+    if (rotation_deg !== undefined) updates.rotation_deg = rotation_deg;
+    if (grain_alignment !== undefined) updates.grain_alignment = grain_alignment;
+    if (measurements !== undefined) updates.measurements = measurements;
+    await database.update(patternBlocks).set(updates).where(eq(patternBlocks.block_id, id));
+    res.json({ block_id: id, ...updates });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete("/api/garment/block/:id", verifyToken, async (req, res) => {
+  try {
+    await database.delete(patternBlocks).where(eq(patternBlocks.block_id, parseInt(req.params.id)));
+    res.json({ deleted: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post("/api/garment/layout/:id/optimize", verifyToken, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const layoutRows = await database.select().from(fabricLayouts).where(eq(fabricLayouts.layout_id, id));
+    if (!layoutRows.length) return res.status(404).json({ error: 'Layout not found' });
+    const blocks = await database.select().from(patternBlocks).where(eq(patternBlocks.block_layout_id, id));
+    if (!blocks.length) return res.json({ message: 'No blocks to optimize', blocks: [] });
+    const packed = garmentBinPack(blocks, parseFloat(layoutRows[0].fabric_width_cm), parseFloat(layoutRows[0].fabric_length_cm));
+    for (const b of packed) {
+      await database.update(patternBlocks).set({
+        pos_x_cm: String(parseFloat(b.pos_x_cm).toFixed(2)),
+        pos_y_cm: String(parseFloat(b.pos_y_cm).toFixed(2)),
+        rotation_deg: String(parseFloat(b.rotation_deg).toFixed(2)),
+        block_width_cm: String(parseFloat(b.block_width_cm).toFixed(2)),
+        block_height_cm: String(parseFloat(b.block_height_cm).toFixed(2)),
+        updated_at: new Date(),
+      }).where(eq(patternBlocks.block_id, b.block_id));
+    }
+    res.json({ message: 'Optimization complete', blocks: packed });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get("/api/garment/layout/:id/export/dxf", verifyToken, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const layoutRows = await database.select().from(fabricLayouts).where(eq(fabricLayouts.layout_id, id));
+    if (!layoutRows.length) return res.status(404).json({ error: 'Layout not found' });
+    const blocks = await database.select().from(patternBlocks).where(eq(patternBlocks.block_layout_id, id));
+    const dxf = garmentBuildDXF(layoutRows[0], blocks);
+    const filename = `layout_${id}_${layoutRows[0].layout_name.replace(/\s+/g,'_')}.dxf`;
+    res.setHeader('Content-Type', 'application/dxf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(dxf);
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 //middleware
