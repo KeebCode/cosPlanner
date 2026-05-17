@@ -191,18 +191,3 @@ All routes require `Authorization: Bearer <firebase-token>` header.
 | GET | `/api/garment/layout/:id/export/dxf` | Download DXF file |
 
 ---
-
-## Firebase Setup (Production)
-
-1. Go to [Firebase Console](https://console.firebase.google.com) → cosplanner-capstone
-2. Project Settings → Service Accounts → Generate new private key
-3. Save as `Backend/server/firebase_credentials.json`
-4. Restart the backend server
-
----
-
-## Branch Structure
-
-- `main` — stable production branch
-- `developer` — active development
-- `feature/ui-improvements` — current session changes (sidebar, profile, inventory restyle, checklist fixes)
