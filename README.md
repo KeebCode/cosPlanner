@@ -4,54 +4,14 @@ A cosplay project management app for tracking garments, inventory, checklists, a
 
 ---
 
-## Getting Started 
-
-### Prerequisites
-- Gmail account from user (Production only)
-- Node.js 22+
-- MySQL 8.0
-- Firebase Authentication 
-
----
-
 ## Tech Stack
 
 | Layer | Tech |
 |---|---|
-| Frontend | React.js + Vite (port 5174) |
+| Frontend | React + Vite (port 5174) |
 | Backend | Express.js + Node.js (port 5000) |
 | Database | MySQL 8.0 via Drizzle ORM |
 | Auth | Firebase Authentication |
-
----
-
-## Features
-
-### Projects
-- Create and manage cosplay projects
-- Each project has measurements, inventory, a checklist, and a garment layout
-
-### Garment Planning  (incomplete due to certain issues)
-- Drag-and-drop pattern pieces onto a scaled fabric canvas
-- Set grain alignment per piece (grainline, cross grain, true bias)
-- Auto-optimize layout using bin-packing algorithm
-- Export to DXF (CAD format for cutting machines)
-- Pan with Alt+drag, zoom with Ctrl+scroll
-
-### Inventory
-- Track materials with status: Owned / Need to Buy / Low on Stock
-- Color-coded by status
-- Quick add from sidebar
-
-### Checklist
-- Per-project task lists with categories, due dates, urgency, and flags
-- Dashboard view across all projects (Today / Scheduled / Overdue / Completed)
-- Auto-generate checklist items from "Need to Buy" inventory
-
-### Profile
-- Circular avatar in the header — click to view profile
-- Edit display name, bio, and profile picture
-- Accessible at `/profile`
 
 ---
 
@@ -88,7 +48,12 @@ cosPlanner/
 
 ---
 
-## Setups
+## Getting Started
+
+### Prerequisites
+- Node.js 18+
+- MySQL 8.0
+- Firebase project (cosplanner-capstone)
 
 ### 1. Database Setup
 ```bash
@@ -130,6 +95,36 @@ npm run dev
 ```
 
 App runs at `http://localhost:5174`
+
+---
+
+## Features
+
+### Projects
+- Create and manage cosplay projects
+- Each project has measurements, inventory, a checklist, and a garment layout
+
+### Garment Planning
+- Drag-and-drop pattern pieces onto a scaled fabric canvas
+- Set grain alignment per piece (grainline, cross grain, true bias)
+- Auto-optimize layout using bin-packing algorithm
+- Export to DXF (CAD format for cutting machines)
+- Pan with Alt+drag, zoom with Ctrl+scroll
+
+### Inventory
+- Track materials with status: Owned / Need to Buy / Low on Stock
+- Color-coded by status
+- Quick add from sidebar
+
+### Checklist
+- Per-project task lists with categories, due dates, urgency, and flags
+- Dashboard view across all projects (Today / Scheduled / Overdue / Completed)
+- Auto-generate checklist items from "Need to Buy" inventory
+
+### Profile
+- Circular avatar in the header — click to view profile
+- Edit display name, bio, and profile picture
+- Accessible at `/profile`
 
 ---
 
@@ -196,3 +191,18 @@ All routes require `Authorization: Bearer <firebase-token>` header.
 | GET | `/api/garment/layout/:id/export/dxf` | Download DXF file |
 
 ---
+
+## Firebase Setup (Production)
+
+1. Go to [Firebase Console](https://console.firebase.google.com) → cosplanner-capstone
+2. Project Settings → Service Accounts → Generate new private key
+3. Save as `Backend/server/firebase_credentials.json`
+4. Restart the backend server
+
+---
+
+## Branch Structure
+
+- `main` — stable production branch
+- `developer` — active development
+- `feature/ui-improvements` — current session changes (sidebar, profile, inventory restyle, checklist fixes)
