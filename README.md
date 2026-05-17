@@ -1,6 +1,6 @@
 # CosPlanner
 
-A cosplay project management app for tracking garments, inventory, checklists, and pattern planning.
+A cosplay project management app for users to track their garments (design), inventory, checklists, and pattern planning.
 
 ---
 
@@ -15,45 +15,14 @@ A cosplay project management app for tracking garments, inventory, checklists, a
 
 ---
 
-## Project Structure
-
-```
-cosPlanner/
-├── Frontend/                  # React app
-│   └── src/
-│       ├── pages/             # Full page components
-│       ├── components/
-│       │   ├── layout/        # Sidebar + header (Layout.jsx)
-│       │   ├── auth/          # RequireAuth guard
-│       │   └── planner/       # Garment planning canvas components
-│       ├── context/           # AuthContext (Firebase user state)
-│       ├── services/          # api.js re-export bridge
-│       ├── constants/         # measurementFields.js re-export bridge
-│       ├── api.js             # All API fetch functions
-│       ├── firebase.js        # Firebase app init
-│       └── App.jsx            # Routes
-│
-└── Backend/
-    ├── server/
-    │   ├── server.js          # Main Express server — ALL routes live here
-    │   ├── Auth/middleware/
-    │   │   └── auth.js        # Firebase token verification middleware
-    │   └── .env               # DB credentials + Firebase path
-    └── src/
-        └── Database/
-            ├── schema.js      # Drizzle ORM table definitions
-            ├── connection.js  # MySQL connection pool
-            └── drizzle.config.js
-```
-
----
-
 ## Getting Started
 
 ### Prerequisites
-- Node.js 18+
+- Gmail account for user
+- Node.js 22+
 - MySQL 8.0
-- Firebase project (cosplanner-capstone)
+- ES Module 6 with Express framework
+- Firebase Authentication
 
 ### 1. Database Setup
 ```bash
