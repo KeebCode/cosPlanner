@@ -4,6 +4,16 @@ A cosplay project management app for tracking garments, inventory, checklists, a
 
 ---
 
+## Getting Started 
+
+### Prerequisites
+- Gmail account from user
+- Node.js 22+
+- MySQL 8.0
+- Firebase Authentication 
+
+---
+
 ## Tech Stack
 
 | Layer | Tech |
@@ -78,13 +88,7 @@ cosPlanner/
 
 ---
 
-## Getting Started
-
-### Prerequisites
-- Gmail account from user
-- Node.js 22+
-- MySQL 8.0
-- Firebase Authentication 
+## Setups
 
 ### 1. Database Setup
 ```bash
