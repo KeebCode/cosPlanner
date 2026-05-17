@@ -15,8 +15,6 @@ A cosplay project management app for tracking garments, inventory, checklists, a
 
 ---
 
----
-
 ## Features
 
 ### Projects
