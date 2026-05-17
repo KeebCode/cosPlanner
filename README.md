@@ -1,6 +1,6 @@
 # CosPlanner
 
-A cosplay project management app for users tracking their garments (design), inventory, checklists, and pattern planning.
+A cosplay project management app for users tracking their garments (design & costume itself), inventory, checklists, and pattern planning.
 
 ---
 
