@@ -51,9 +51,10 @@ cosPlanner/
 ## Getting Started
 
 ### Prerequisites
-- Node.js 18+
+- Gmail account from user
+- Node.js 22+
 - MySQL 8.0
-- Firebase project (cosplanner-capstone)
+- Firebase Authentication 
 
 ### 1. Database Setup
 ```bash
