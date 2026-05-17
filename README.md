@@ -21,7 +21,7 @@ A cosplay project management app for tracking garments, inventory, checklists, a
 - Create and manage cosplay projects
 - Each project has measurements, inventory, a checklist, and a garment layout
 
-### Garment Planning
+### Garment Planning  (incomplete due to certain issues)
 - Drag-and-drop pattern pieces onto a scaled fabric canvas
 - Set grain alignment per piece (grainline, cross grain, true bias)
 - Auto-optimize layout using bin-packing algorithm
