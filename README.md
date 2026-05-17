@@ -51,7 +51,7 @@ A cosplay project management app for users tracking their garments (design), inv
 ### Profile
 - Circular avatar in the header — click to view profile
 - Edit display name, bio, and profile picture
-- Accessible at `/profile`
+- Accessible at profile
 
 ---
 
