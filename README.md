@@ -7,7 +7,7 @@ A cosplay project management app for tracking garments, inventory, checklists, a
 ## Getting Started 
 
 ### Prerequisites
-- Gmail account from user
+- Gmail account from user (Production only)
 - Node.js 22+
 - MySQL 8.0
 - Firebase Authentication 
