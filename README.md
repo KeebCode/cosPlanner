@@ -8,8 +8,8 @@ A cosplay project management app for users to track their garments (design), inv
 
 | Layer | Tech |
 |---|---|
-| Frontend | React + Vite (port 5174) |
-| Backend | Express.js + Node.js (port 5000) |
+| Frontend | React + Vite |
+| Backend | Express.js + Node.js |
 | Database | MySQL 8.0 via Drizzle ORM |
 | Auth | Firebase Authentication |
 
@@ -23,49 +23,6 @@ A cosplay project management app for users to track their garments (design), inv
 - MySQL 8.0
 - ES Module 6 with Express framework
 - Firebase Authentication
-
-### 1. Database Setup
-```bash
-cd Backend/src/Database
-npx drizzle-kit push
-```
-
-### 2. Backend
-Create `Backend/server/.env`:
-```
-database_host=localhost
-database_user=root
-database_password=yourpassword
-database_name=Capstone_project
-port=5000
-firebase_credential_path=./firebase_credentials.json
-```
-
-Then start:
-```bash
-cd Backend/server
-npm install
-node server.js
-```
-
-> **Note:** Firebase credentials (`firebase_credentials.json`) are optional in development. Without them the server runs in stub auth mode — all requests are treated as a single dev user.
-
-### 3. Frontend
-Create `Frontend/.env`:
-```
-VITE_API_BASE_URL=http://localhost:5000
-```
-
-Then start:
-```bash
-cd Frontend
-npm install
-npm run dev
-```
-
-App runs at `http://localhost:5174`
-
----
 
 ## Features
 
@@ -160,18 +117,3 @@ All routes require `Authorization: Bearer <firebase-token>` header.
 | GET | `/api/garment/layout/:id/export/dxf` | Download DXF file |
 
 ---
-
-## Firebase Setup (Production)
-
-1. Go to [Firebase Console](https://console.firebase.google.com) → cosplanner-capstone
-2. Project Settings → Service Accounts → Generate new private key
-3. Save as `Backend/server/firebase_credentials.json`
-4. Restart the backend server
-
----
-
-## Branch Structure
-
-- `main` — stable production branch
-- `developer` — active development
-- `feature/ui-improvements` — current session changes (sidebar, profile, inventory restyle, checklist fixes)
