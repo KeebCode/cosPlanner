@@ -15,6 +15,38 @@ A cosplay project management app for tracking garments, inventory, checklists, a
 
 ---
 
+---
+
+## Features
+
+### Projects
+- Create and manage cosplay projects
+- Each project has measurements, inventory, a checklist, and a garment layout
+
+### Garment Planning
+- Drag-and-drop pattern pieces onto a scaled fabric canvas
+- Set grain alignment per piece (grainline, cross grain, true bias)
+- Auto-optimize layout using bin-packing algorithm
+- Export to DXF (CAD format for cutting machines)
+- Pan with Alt+drag, zoom with Ctrl+scroll
+
+### Inventory
+- Track materials with status: Owned / Need to Buy / Low on Stock
+- Color-coded by status
+- Quick add from sidebar
+
+### Checklist
+- Per-project task lists with categories, due dates, urgency, and flags
+- Dashboard view across all projects (Today / Scheduled / Overdue / Completed)
+- Auto-generate checklist items from "Need to Buy" inventory
+
+### Profile
+- Circular avatar in the header — click to view profile
+- Edit display name, bio, and profile picture
+- Accessible at `/profile`
+
+---
+
 ## Project Structure
 
 ```
@@ -96,36 +128,6 @@ npm run dev
 ```
 
 App runs at `http://localhost:5174`
-
----
-
-## Features
-
-### Projects
-- Create and manage cosplay projects
-- Each project has measurements, inventory, a checklist, and a garment layout
-
-### Garment Planning
-- Drag-and-drop pattern pieces onto a scaled fabric canvas
-- Set grain alignment per piece (grainline, cross grain, true bias)
-- Auto-optimize layout using bin-packing algorithm
-- Export to DXF (CAD format for cutting machines)
-- Pan with Alt+drag, zoom with Ctrl+scroll
-
-### Inventory
-- Track materials with status: Owned / Need to Buy / Low on Stock
-- Color-coded by status
-- Quick add from sidebar
-
-### Checklist
-- Per-project task lists with categories, due dates, urgency, and flags
-- Dashboard view across all projects (Today / Scheduled / Overdue / Completed)
-- Auto-generate checklist items from "Need to Buy" inventory
-
-### Profile
-- Circular avatar in the header — click to view profile
-- Edit display name, bio, and profile picture
-- Accessible at `/profile`
 
 ---
 
