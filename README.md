@@ -8,7 +8,7 @@ A cosplay project management app for tracking garments, inventory, checklists, a
 
 | Layer | Tech |
 |---|---|
-| Frontend | React + Vite (port 5174) |
+| Frontend | React.js + Vite (port 5174) |
 | Backend | Express.js + Node.js (port 5000) |
 | Database | MySQL 8.0 via Drizzle ORM |
 | Auth | Firebase Authentication |
