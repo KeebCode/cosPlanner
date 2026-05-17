@@ -1,6 +1,16 @@
 # CosPlanner
 
-A cosplay project management app for users to track their garments (design), inventory, checklists, and pattern planning.
+A cosplay project management app for tracking garments, inventory, checklists, and pattern planning.
+
+---
+
+## Getting Started 
+
+### Prerequisites
+- Gmail account from user (Production only)
+- Node.js 22+
+- MySQL 8.0
+- Firebase Authentication 
 
 ---
 
@@ -8,21 +18,12 @@ A cosplay project management app for users to track their garments (design), inv
 
 | Layer | Tech |
 |---|---|
-| Frontend | React + Vite |
-| Backend | Express.js + Node.js |
+| Frontend | React.js + Vite (port 5174) |
+| Backend | Express.js + Node.js (port 5000) |
 | Database | MySQL 8.0 via Drizzle ORM |
 | Auth | Firebase Authentication |
 
 ---
-
-## Getting Started
-
-### Prerequisites
-- Gmail account for user
-- Node.js 22+
-- MySQL 8.0
-- ES Module 6 with Express framework
-- Firebase Authentication
 
 ## Features
 
@@ -30,7 +31,7 @@ A cosplay project management app for users to track their garments (design), inv
 - Create and manage cosplay projects
 - Each project has measurements, inventory, a checklist, and a garment layout
 
-### Garment Planning
+### Garment Planning  (incomplete due to certain issues)
 - Drag-and-drop pattern pieces onto a scaled fabric canvas
 - Set grain alignment per piece (grainline, cross grain, true bias)
 - Auto-optimize layout using bin-packing algorithm
@@ -51,6 +52,84 @@ A cosplay project management app for users to track their garments (design), inv
 - Circular avatar in the header — click to view profile
 - Edit display name, bio, and profile picture
 - Accessible at `/profile`
+
+---
+
+## Project Structure
+
+```
+cosPlanner/
+├── Frontend/                  # React app
+│   └── src/
+│       ├── pages/             # Full page components
+│       ├── components/
+│       │   ├── layout/        # Sidebar + header (Layout.jsx)
+│       │   ├── auth/          # RequireAuth guard
+│       │   └── planner/       # Garment planning canvas components
+│       ├── context/           # AuthContext (Firebase user state)
+│       ├── services/          # api.js re-export bridge
+│       ├── constants/         # measurementFields.js re-export bridge
+│       ├── api.js             # All API fetch functions
+│       ├── firebase.js        # Firebase app init
+│       └── App.jsx            # Routes
+│
+└── Backend/
+    ├── server/
+    │   ├── server.js          # Main Express server — ALL routes live here
+    │   ├── Auth/middleware/
+    │   │   └── auth.js        # Firebase token verification middleware
+    │   └── .env               # DB credentials + Firebase path
+    └── src/
+        └── Database/
+            ├── schema.js      # Drizzle ORM table definitions
+            ├── connection.js  # MySQL connection pool
+            └── drizzle.config.js
+```
+
+---
+
+## Setups
+
+### 1. Database Setup
+```bash
+cd Backend/src/Database
+npx drizzle-kit push
+```
+
+### 2. Backend
+Create `Backend/server/.env`:
+```
+database_host=localhost
+database_user=root
+database_password=yourpassword
+database_name=Capstone_project
+port=5000
+firebase_credential_path=./firebase_credentials.json
+```
+
+Then start:
+```bash
+cd Backend/server
+npm install
+node server.js
+```
+
+> **Note:** Firebase credentials (`firebase_credentials.json`) are optional in development. Without them the server runs in stub auth mode — all requests are treated as a single dev user.
+
+### 3. Frontend
+Create `Frontend/.env`:
+```
+VITE_API_BASE_URL=http://localhost:5000
+```
+
+Then start:
+```bash
+cd Frontend
+npm install
+npm run dev
+```
+
+App runs at `http://localhost:5174`
 
 ---
 
